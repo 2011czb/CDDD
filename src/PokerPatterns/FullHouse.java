@@ -9,7 +9,7 @@ public class FullHouse extends PokerPattern {
     private static final FullHouse INSTANCE = new FullHouse();
 
     private FullHouse() {
-        super("三带一对", 5);
+        super("三带一对", 6);
     }
 
     public static FullHouse getInstance() {
