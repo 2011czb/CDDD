@@ -9,7 +9,7 @@ public class FourofaKind extends PokerPattern {
     private static final FourofaKind INSTANCE = new FourofaKind();
 
     private FourofaKind() {
-        super("四带一", 5);
+        super("四带一", 7);
     }
 
     public static FourofaKind getInstance() {
