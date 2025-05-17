@@ -9,7 +9,7 @@ public class Flush extends PokerParrern{
     private static final Flush INSTANCE = new Flush();
 
     private Flush(){
-        super("同花五",9);
+        super("同花五",5);
     }
 
     public static Flush getInstance(){
