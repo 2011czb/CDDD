@@ -1,5 +1,7 @@
+package PokerPatterns;
+
 import java.util.*;
-import Card.*;
+import cards.*;
 
 /**
  * 三个带一对牌型实现

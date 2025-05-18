@@ -1,5 +1,7 @@
+package PokerPatterns;
+
 import java.util.List;
-import Card.*;
+import cards.*;
 
 /**
  * 单张：任何一张单牌。

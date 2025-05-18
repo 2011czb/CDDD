@@ -1,5 +1,7 @@
+package PokerPatterns;
+
 import java.util.*;
-import Card.*;
+import cards.*;
 
 /**
  * 三张牌型实现
@@ -36,7 +38,7 @@ public class Three extends PokerPattern {
     @Override
     public int getCritical(List<Card> cards){
         int temp = cards.get(0).getWeight() > cards.get(1).getWeight() ? cards.get(0).getWeight() : cards.get(1).getWeight();
-        temp = temp > cards.get(20).getWeight() ? temp : cards.get(2).getWeight();
+        temp = temp > cards.get(2).getWeight() ? temp : cards.get(2).getWeight();
         return temp;
     }
 }

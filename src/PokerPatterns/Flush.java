@@ -1,11 +1,13 @@
+package PokerPatterns;
+
 import java.util.*;
-import Card.*;
+import cards.*;
 
 /**
  * 同花五牌型实现
  * */
 
-public class Flush extends PokerParrern{
+public class Flush extends PokerPattern{
     private static final Flush INSTANCE = new Flush();
 
     private Flush(){
