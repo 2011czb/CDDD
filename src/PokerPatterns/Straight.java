@@ -1,7 +1,10 @@
-import java.util.List;
+package PokerPatterns;
+
 import java.util.ArrayList;
-import java.util.stream.Collectors;
-import Card.*;
+import java.util.Collections;
+import java.util.List;
+import cards.Card;
+import cards.Rank;
 
 /**
  * 杂顺牌型实现

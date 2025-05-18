@@ -1,11 +1,14 @@
+package PokerPatterns;
+
 import java.util.*;
-import Card.*;
+import cards.Card;
+import cards.Suit;
 
 /**
  * 同花五牌型实现
  * */
 
-public class Flush extends PokerParrern{
+public class Flush extends PokerPattern {
     private static final Flush INSTANCE = new Flush();
 
     private Flush(){
@@ -14,23 +17,27 @@ public class Flush extends PokerParrern{
 
     public static Flush getInstance(){
         return INSTANCE;
-}
+    }
 
     @Override
     public boolean match(List<Card> cards) {
         if (cards.size() != 5) return false;
 
         // 判断花色是否全部相同
-        String suit = cards.get(0).getSuit();
+        Suit firstSuit = cards.get(0).getSuit();
         for (Card c : cards) {
-            if (!c.getSuit().equals(suit)) {
+            if (c.getSuit() != firstSuit) {
                 return false;
             }
-	//判断是否为顺子
-        if (Straight.getInstance().match(cards)) {
-            return false;}
-	return true;
         }
+        
+        // 判断是否为顺子
+        if (Straight.getInstance().match(cards)) {
+            return false;
+        }
+        
+        return true;
+    }
 
     @Override
     public String getName() {
