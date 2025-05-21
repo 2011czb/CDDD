@@ -1,38 +1,41 @@
 package PokerPatterns;
 
 import java.util.*;
-import cards.*;
+import card.*;
 
 /**
  * 同花五牌型实现
- * */
-
-public class Flush extends PokerPattern{
+ */
+public class Flush extends PokerPattern {
     private static final Flush INSTANCE = new Flush();
 
-    private Flush(){
-        super("同花五",5);
+    private Flush() {
+        super("同花五", 5);
     }
 
-    public static Flush getInstance(){
+    public static Flush getInstance() {
         return INSTANCE;
-}
+    }
 
     @Override
     public boolean match(List<Card> cards) {
         if (cards.size() != 5) return false;
 
-        // 判断花色是否全部相同
-        String suit = cards.get(0).getSuit();
-        for (Card c : cards) {
-            if (!c.getSuit().equals(suit)) {
+        // 判断是否为同一花色
+        for (int i = 0; i < 4; i++) {
+            if (cards.get(i).getSuit() == null || cards.get(i + 1).getSuit() == null ||
+                !cards.get(i).getSuit().equals(cards.get(i + 1).getSuit())) {
                 return false;
             }
-	//判断是否为顺子
-        if (Straight.getInstance().match(cards)) {
-            return false;}
-	return true;
         }
+
+        // 如果是顺子，则不是同花五
+        if (Straight.getInstance().match(cards)) {
+            return false;
+        }
+
+        return true;
+    }
 
     @Override
     public String getName() {
@@ -43,14 +46,8 @@ public class Flush extends PokerPattern{
     public int getPatternWeight() {
         return this.weight;
     }
-
     @Override
     public int getCritical(List<Card> cards) {
-        // 同花五比大小只看点数最大的那张
-        int max = Integer.MIN_VALUE;
-        for (Card c : cards) {
-            max = Math.max(max, c.getWeight());
-        }
-        return max;
+        return Straight.getInstance().getCritical(cards);
     }
 }
