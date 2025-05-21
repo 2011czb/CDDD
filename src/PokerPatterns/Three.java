@@ -37,9 +37,10 @@ public class Three extends PokerPattern {
 
     @Override
     public int getCritical(List<Card> cards){
-        int temp = cards.get(0).getWeight() > cards.get(1).getWeight() ? cards.get(0).getWeight() : cards.get(1).getWeight();
-        temp = temp > cards.get(2).getWeight() ? temp : cards.get(2).getWeight();
-        return temp;
+        //三张牌的点数相同，只需要返回任意一张牌的权重
+        //因为三张牌点数相同，所以权重只取决于花色
+        //返回权重最大的那张牌
+        return Math.max(Math.max(cards.get(0).getWeight(), cards.get(1).getWeight()), cards.get(2).getWeight());
     }
 }
 
