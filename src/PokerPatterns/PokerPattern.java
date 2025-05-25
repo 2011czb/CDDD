@@ -3,6 +3,7 @@ package PokerPatterns;
 import java.util.List;
 import cards.Card;
 
+
 /**
  * 单张：任何一张单牌。
  * 一对：二张牌点相同的牌。

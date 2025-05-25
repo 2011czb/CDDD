@@ -3,6 +3,7 @@ package PokerPatterns;
 import java.util.List;
 import cards.Card;
 
+
 /**
  * 单张牌型实现
  * */

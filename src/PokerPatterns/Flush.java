@@ -8,20 +8,23 @@ import cards.Suit;
  * 同花五牌型实现
  * */
 
+
+
 public class Flush extends PokerPattern {
     private static final Flush INSTANCE = new Flush();
 
-    private Flush(){
-        super("同花五",5);
+    private Flush() {
+        super("同花五", 5);
     }
 
-    public static Flush getInstance(){
+    public static Flush getInstance() {
         return INSTANCE;
     }
 
     @Override
     public boolean match(List<Card> cards) {
         if (cards.size() != 5) return false;
+
 
         // 判断花色是否全部相同
         Suit firstSuit = cards.get(0).getSuit();
@@ -32,10 +35,16 @@ public class Flush extends PokerPattern {
         }
         
         // 判断是否为顺子
+       
+        // 如果是顺子，则不是同花五
+
         if (Straight.getInstance().match(cards)) {
             return false;
         }
         
+        return true;
+    }
+
         return true;
     }
 
@@ -48,14 +57,8 @@ public class Flush extends PokerPattern {
     public int getPatternWeight() {
         return this.weight;
     }
-
     @Override
     public int getCritical(List<Card> cards) {
-        // 同花五比大小只看点数最大的那张
-        int max = Integer.MIN_VALUE;
-        for (Card c : cards) {
-            max = Math.max(max, c.getWeight());
-        }
-        return max;
+        return Straight.getInstance().getCritical(cards);
     }
 }
