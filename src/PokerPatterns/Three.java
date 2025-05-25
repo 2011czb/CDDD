@@ -1,7 +1,8 @@
 package PokerPatterns;
 
 import java.util.*;
-import cards.*;
+import cards.Card;
+
 
 /**
  * 三张牌型实现
@@ -37,6 +38,7 @@ public class Three extends PokerPattern {
 
     @Override
     public int getCritical(List<Card> cards){
+
         //三张牌的点数相同，只需要返回任意一张牌的权重
         //因为三张牌点数相同，所以权重只取决于花色
         //返回权重最大的那张牌

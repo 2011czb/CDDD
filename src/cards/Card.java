@@ -65,4 +65,27 @@ public class Card {
         if (rank.getValue() >= Rank.TEN.getValue()) return 10; // J, Q, K
         return rank.getValue() + 1; // 2-9 (rank.value 1-8) + 1
     }
+    
+    /**
+     * 获取牌的权重值，用于比较大小
+     * 按照 PokerPattern 定义的规则：
+     * 点数规则: 2(15) > A(14) > K(13) > ... > 3(3)
+     * 花色规则: 黑桃(3) > 红桃(2) > 梅花(1) > 方片(0)
+     * 复合权重公式: 点数权重*10 + 花色权重
+     * @return 牌的复合权重值
+     */
+    public int getWeight() {
+        // 计算点数权重
+        int rankWeight;
+        int rankValue = rank.getValue();
+        if (rankValue == 0) rankWeight = 14; // A
+        else if (rankValue == 1) rankWeight = 15; // 2
+        else rankWeight = rankValue + 1; // 3-K (值2-12) + 1 = 3-13
+        
+        // 计算花色权重 (黑桃最大)
+        int suitWeight = 3 - suit.getValue();
+        
+        // 返回复合权重
+        return rankWeight * 10 + suitWeight;
+    }
 }

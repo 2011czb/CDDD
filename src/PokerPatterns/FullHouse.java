@@ -1,11 +1,13 @@
 package PokerPatterns;
 
-import java.util.*;
-import cards.*;
+import cards.Card;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
- * 三个带一对牌型实现
- * */
+ * 葫芦（三带二）牌型实现
+ */
 
 public class FullHouse extends PokerPattern {
     private static final FullHouse INSTANCE = new FullHouse();

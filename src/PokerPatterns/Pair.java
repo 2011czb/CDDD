@@ -1,7 +1,8 @@
 package PokerPatterns;
 
-import java.util.*;
-import cards.*;
+
+import java.util.List;
+import cards.Card;
 
 /**
  * 对子牌型实现
