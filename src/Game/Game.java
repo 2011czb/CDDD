@@ -1,21 +1,20 @@
 package Game;
 
 import Players.Player;
+import PokerPatterns.Flush;
+import PokerPatterns.FourofaKind;
+import PokerPatterns.FullHouse;
+import PokerPatterns.One;
+import PokerPatterns.Pair;
+import PokerPatterns.PokerPattern;
+import PokerPatterns.Straight;
+import PokerPatterns.StraightFlush;
+import PokerPatterns.Three;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import PokerPatterns.PokerPattern;
-import PokerPatterns.StraightFlush;
-import PokerPatterns.FourofaKind;
-import PokerPatterns.FullHouse;
-import PokerPatterns.Flush;
-import PokerPatterns.Straight;
-import PokerPatterns.Three;
-import PokerPatterns.Pair;
-import PokerPatterns.One;
 
 public class Game {
     // 游戏模式常量
@@ -25,8 +24,8 @@ public class Game {
     private List<Player> players;       // 玩家列表
     private Deck deck;                  // 牌堆
     private int currentPlayerIndex;     // 当前玩家索引
+    private int lastPlayerIndex;        // 上一个实际出牌的玩家索引
     private List<Card> lastPlayedCards; // 上一次出的牌
-    private Player lastPlayer;          // 上一个出牌的玩家
     private boolean gameEnded;          // 游戏是否结束
     private Player winner;              // 获胜者
     private int gameMode;               // 游戏模式
@@ -79,8 +78,8 @@ public class Game {
         }
         this.deck = new Deck();
         this.currentPlayerIndex = 0;
+        this.lastPlayerIndex = -1;  // 初始化为-1，表示还没有玩家出牌
         this.lastPlayedCards = null;
-        this.lastPlayer = null;
         this.gameEnded = false;
         this.winner = null;
         this.gameMode = gameMode;
@@ -158,8 +157,8 @@ public class Game {
         
         // 重置游戏状态
         currentPlayerIndex = 0;
+        lastPlayerIndex = -1;  // 重置为-1，表示还没有玩家出牌
         lastPlayedCards = null;
-        lastPlayer = null;
         gameEnded = false;
         winner = null;
     }
@@ -180,6 +179,12 @@ public class Game {
             Player currentPlayer = players.get(currentPlayerIndex);
             System.out.println(currentPlayer.getName() + "的回合");
             
+            // 更新所有玩家的索引
+            for (Player player : players) {
+                player.setLastPlayerIndex(lastPlayerIndex);
+                player.setCurrentPlayerIndex(currentPlayerIndex);
+            }
+            
             // 显示当前玩家的手牌
             displayPlayerHand(currentPlayer);
             
@@ -187,7 +192,11 @@ public class Game {
             List<Card> playedCards = playerPlayCards(currentPlayer);
             
             // 处理出牌结果
-            handlePlayedCards(currentPlayer, playedCards);
+            if (playedCards != null && !playedCards.isEmpty()) {
+                handlePlayedCards(currentPlayer, playedCards);
+            } else {
+                System.out.println(currentPlayer.getName() + "选择不出牌");
+            }
             
             // 检查游戏是否结束
             checkGameEnd();
@@ -210,23 +219,27 @@ public class Game {
         // 调用玩家的play方法，传入上一手牌
         List<Card> playedCards = player.play(lastPlayedCards);
         
+        // 如果是第一个出牌的玩家，不能过牌
+        if (lastPlayerIndex == -1) {
+            if (playedCards == null || playedCards.isEmpty()) {
+                System.out.println("你是第一个出牌的玩家，必须出牌");
+                return playerPlayCards(player); // 重新出牌
+            }
+        }
+        
+        // 如果不是第一个出牌的玩家，可以选择过牌
+        if (playedCards == null || playedCards.isEmpty()) {
+            // 如果上一个出牌的玩家是当前玩家，且其他玩家都过牌，则当前玩家不能过牌
+            if (lastPlayerIndex == currentPlayerIndex) {
+                System.out.println("其他玩家都过牌了，你必须出牌");
+                return playerPlayCards(player); // 重新出牌
+            }
+            return playedCards; // 允许过牌
+        }
+        
         // 验证出牌是否合法
-        if (playedCards != null && !playedCards.isEmpty()) {
-            // 检查是否跟上一手牌相同数量
-            if (lastPlayedCards != null && !lastPlayedCards.isEmpty() && 
-                playedCards.size() != lastPlayedCards.size()) {
-                System.out.println("出牌数量必须与上一手牌相同（" + lastPlayedCards.size() + "张）");
-                return playerPlayCards(player); // 重新出牌
-            }
-            
-            // 验证牌型是否合法
-            if (!isValidPlay(playedCards, lastPlayedCards)) {
-                System.out.println("出牌不符合规则，请重新选择");
-                return playerPlayCards(player); // 重新出牌
-            }
-        } else if (lastPlayer == player) {
-            // 如果上一次是自己出的牌，不能选择不出
-            System.out.println("你是第一个出牌的玩家，必须出牌");
+        if (!isValidPlay(playedCards, lastPlayedCards)) {
+            System.out.println("出牌不符合规则，请重新选择");
             return playerPlayCards(player); // 重新出牌
         }
         
@@ -239,11 +252,13 @@ public class Game {
      * @param cards 玩家出的牌
      */
     private void handlePlayedCards(Player player, List<Card> cards) {
+        // 如果玩家过牌，不更新lastCards和lastPlayerIndex
         if (cards == null || cards.isEmpty()) {
             System.out.println(player.getName() + "选择不出牌");
             return;
         }
         
+        // 玩家实际出牌，更新最后出牌信息
         System.out.println(player.getName() + "出牌：");
         for (Card card : cards) {
             System.out.print(card.getDisplayName() + " ");
@@ -252,7 +267,7 @@ public class Game {
         
         // 更新最后出牌信息
         lastPlayedCards = cards;
-        lastPlayer = player;
+        lastPlayerIndex = currentPlayerIndex;  // 只有在实际出牌时才更新lastPlayerIndex
         
         // 检查玩家手牌是否为空
         if (player.getHand().isEmpty()) {
@@ -359,9 +374,10 @@ public class Game {
             return false; // 不是有效的牌型
         }
         
-        // 如果是第一手牌，或者上一个玩家是当前玩家（表示玩家可以自由出牌）
-        if (lastCards == null || lastCards.isEmpty()) {
-            return true;
+        // 如果是第一手牌，或者上一个出牌的玩家是当前玩家（表示其他玩家都过牌）
+        if (lastCards == null || lastPlayerIndex == currentPlayerIndex) {
+            // 自由出牌时，只需要验证是否是有效牌型
+            return currentPattern != null;
         }
         
         // 判断与上一手牌型是否相同，以及是否更大

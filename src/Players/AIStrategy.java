@@ -26,8 +26,13 @@ public class AIStrategy {
     public static List<Card> makeDecision(Player player, List<Card> lastCards) {
         List<Card> hand = player.getHand();
         
-        // 简单AI策略：如果是自己的回合（没有上一手牌），随机出一张
-        if (lastCards == null || lastCards.isEmpty()) {
+        // 如果是第一手牌，随机出一张
+        if (lastCards == null) {
+            return playRandomCard(player);
+        }
+        
+        // 如果上一个实际出牌的玩家就是当前AI玩家，必须出牌
+        if (isLastPlayerCurrentPlayer(player)) {
             return playRandomCard(player);
         }
         
@@ -40,6 +45,15 @@ public class AIStrategy {
         // 如果找不到合适的牌，选择不出
         System.out.println(player.getName() + "选择不出牌");
         return Collections.emptyList();
+    }
+    
+    /**
+     * 判断上一个实际出牌的玩家是否是当前玩家
+     * @param player 当前玩家
+     * @return 如果上一个实际出牌的玩家是当前玩家返回true，否则返回false
+     */
+    private static boolean isLastPlayerCurrentPlayer(Player player) {
+        return player.getLastPlayerIndex() == player.getCurrentPlayerIndex();
     }
     
     /**

@@ -1,9 +1,9 @@
 package PokerPatterns;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import cards.Card;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * 四个带单张牌型实现

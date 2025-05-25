@@ -1,10 +1,10 @@
 package PokerPatterns;
 
+import cards.Card;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import cards.Card;
-import cards.Rank;
 
 /**
  * 杂顺牌型实现
@@ -50,7 +50,7 @@ public class Straight extends PokerPattern {
         
         // 其他情况，检查是否构成连续序列
         List<Card> sortedCards = new ArrayList<>(cards);
-        sortedCards.sort((a, b) -> a.getRank().getValue() - b.getRank().getValue());
+        Collections.sort(sortedCards, Comparator.comparingInt((Card card) -> card.getRank().getValue()));
         return checkConsecutive(sortedCards);
     }
     
@@ -77,10 +77,9 @@ public class Straight extends PokerPattern {
     
     @Override
     public int getCritical(List<Card> cards) {
-
         // 先对牌进行排序
         List<Card> sortedCards = new ArrayList<>(cards);
-        sortedCards.sort((a, b) -> a.getRank().getValue() - b.getRank().getValue());
+        Collections.sort(sortedCards, Comparator.comparingInt((Card card) -> card.getRank().getValue()));
         
         // 根据第一张牌的值判断特殊情况
         int firstRank = sortedCards.get(0).getRank().getValue();

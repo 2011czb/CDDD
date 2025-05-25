@@ -1,10 +1,9 @@
 package PokerPatterns;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import cards.Card;
-import cards.Rank;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * 葫芦（三带二）牌型实现

@@ -12,6 +12,8 @@ public class Player {
     private String name;
     private List<Card> hand; // 玩家手牌
     private boolean isAI;    // 是否为AI玩家
+    private int lastPlayerIndex;  // 上一个出牌的玩家索引
+    private int currentPlayerIndex;  // 当前玩家索引
 
     /**
      * 构造函数，创建玩家并初始化手牌
@@ -30,6 +32,8 @@ public class Player {
         this.name = name;
         this.hand = new ArrayList<>(); // 初始化手牌为空列表
         this.isAI = isAI;
+        this.lastPlayerIndex = -1;
+        this.currentPlayerIndex = -1;
     }
 
     public String getName() {
@@ -194,12 +198,6 @@ public class Player {
         }
         System.out.println();
         
-        // 如果是跟牌，检查数量是否匹配
-        if (lastCards != null && !lastCards.isEmpty() && selectedCards.size() != lastCards.size()) {
-            System.out.println("出牌数量必须与上一手牌相同（" + lastCards.size() + "张）");
-            return humanPlay(lastCards); // 重新选择
-        }
-        
         return playCards(cardIndices);
     }
     
@@ -221,6 +219,22 @@ public class Player {
     public void clearHand(){
     hand.clear();
 }
+
+    public void setLastPlayerIndex(int index) {
+        this.lastPlayerIndex = index;
+    }
+
+    public void setCurrentPlayerIndex(int index) {
+        this.currentPlayerIndex = index;
+    }
+
+    public int getLastPlayerIndex() {
+        return lastPlayerIndex;
+    }
+
+    public int getCurrentPlayerIndex() {
+        return currentPlayerIndex;
+    }
 }
 
 
