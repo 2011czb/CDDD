@@ -4,6 +4,7 @@ import cards.Card;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ArrayList;
 
 
 /**
@@ -56,13 +57,22 @@ public class FourofaKind extends PokerPattern {
 
     @Override
     public int getCritical(List<Card> cards) {
-        // 按牌值排序
-        Collections.sort(cards, Comparator.comparingInt((Card card) -> card.getRank().getValue()));
+        // 返回四张相同点数的牌中任意一张的权重
+        return cards.get(0).getWeight();
+    }
 
-        if (cards.get(0).getRank().getValue() == cards.get(1).getRank().getValue()) {
-            return cards.get(3).getWeight(); // 前四张牌相同
-        } else {
-            return cards.get(4).getWeight(); // 后四张牌相同
+    @Override
+    public List<CardGroup> potentialCardGroup(List<Card> availableCards) {
+        List<CardGroup> result = new ArrayList<>();
+        AnnotatedCards annotatedCards = new AnnotatedCards(availableCards);
+        
+        // 遍历所有点数相同的牌组
+        for (List<Card> cards : annotatedCards.getNumberMap().values()) {
+            // 如果某个点数的牌数量大于等于4，则生成所有可能的四张组合
+            if (cards.size() >= 4) {
+                PatternMatchUtil.enumCombinationSimple(result, cards, 4);
+            }
         }
+        return result;
     }
 }

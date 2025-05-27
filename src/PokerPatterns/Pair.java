@@ -2,6 +2,7 @@ package PokerPatterns;
 
 
 import java.util.List;
+import java.util.ArrayList;
 import cards.Card;
 
 /**
@@ -48,5 +49,20 @@ public class Pair extends PokerPattern {
         // 返回两张牌中点数较大的那张牌的点数
         int temp = cards.get(0).getWeight() > cards.get(1).getWeight() ? cards.get(0).getWeight() : cards.get(1).getWeight();
         return temp;
+    }
+
+    @Override
+    public List<CardGroup> potentialCardGroup(List<Card> availableCards) {
+        List<CardGroup> result = new ArrayList<>();
+        AnnotatedCards annotatedCards = new AnnotatedCards(availableCards);
+        
+        // 遍历所有点数相同的牌组
+        for (List<Card> cards : annotatedCards.getNumberMap().values()) {
+            // 如果某个点数的牌数量大于等于2，则生成所有可能的对子组合
+            if (cards.size() >= 2) {
+                PatternMatchUtil.enumCombinationSimple(result, cards, 2);
+            }
+        }
+        return result;
     }
 }

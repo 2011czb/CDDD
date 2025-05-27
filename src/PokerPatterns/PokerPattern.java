@@ -39,4 +39,11 @@ public abstract class PokerPattern {
      * 找出牌型中最大的牌（用于比较同牌型大小）
      */
     public abstract int getCritical(List<Card> cards);
+
+    /**
+     * 生成可能的牌型组合
+     * @param availableCards 可用的牌
+     * @return 所有可能的牌型组合列表
+     */
+    public abstract List<CardGroup> potentialCardGroup(List<Card> availableCards);
 }

@@ -2,7 +2,8 @@ package Game;
 
 import Players.Player;
 import cards.Card;
-import java.util.List;
+import PokerPatterns.*;
+import java.util.*;
 
 /**
  * 游戏显示管理器
@@ -52,6 +53,11 @@ public class GameDisplayManager {
             System.out.print(card.getDisplayName() + " ");
         }
         System.out.println();
+
+        // 如果是非AI玩家出牌，更新并显示可能的牌型
+        if (!player.isAI()) {
+            updateAndDisplayPossiblePatterns();
+        }
     }
 
     /**
@@ -72,5 +78,58 @@ public class GameDisplayManager {
     public void displayCurrentTurn() {
         Player currentPlayer = stateManager.getCurrentPlayer();
         System.out.println("\n" + currentPlayer.getName() + "的回合");
+    }
+
+    /**
+     * 显示玩家手牌中所有可能的牌型
+     * @param player 要分析的玩家
+     */
+    public void displayPossiblePatterns(Player player) {
+        // 只分析非AI玩家的手牌
+        if (player.isAI()) {
+            return;
+        }
+
+        System.out.println("\n" + player.getName() + "的手牌中所有可能的牌型：");
+        List<Card> hand = player.getHand();
+        
+        // 获取所有牌型实例
+        List<PokerPattern> patterns = Arrays.asList(
+            StraightFlush.getInstance(),    // 同花顺
+            FourofaKind.getInstance(),      // 四带一
+            FullHouse.getInstance(),        // 三带一对
+            Flush.getInstance(),            // 同花五
+            Straight.getInstance(),         // 杂顺
+            Three.getInstance(),            // 三张
+            Pair.getInstance(),             // 对子
+            One.getInstance()               // 单张
+        );
+
+        // 分析每种牌型
+        for (PokerPattern pattern : patterns) {
+            List<CardGroup> possibleGroups = pattern.potentialCardGroup(hand);
+            if (!possibleGroups.isEmpty()) {
+                System.out.println("\n" + pattern.getName() + "：");
+                for (CardGroup group : possibleGroups) {
+                    System.out.print("  ");
+                    for (Card card : group.getCards()) {
+                        System.out.print(card.getDisplayName() + " ");
+                    }
+                    System.out.println();
+                }
+            }
+        }
+        System.out.println(); // 添加一个空行
+    }
+
+    /**
+     * 更新并显示当前玩家可能的牌型
+     * 在玩家出牌后调用此方法
+     */
+    public void updateAndDisplayPossiblePatterns() {
+        Player currentPlayer = stateManager.getCurrentPlayer();
+        if (!currentPlayer.isAI()) {
+            displayPossiblePatterns(currentPlayer);
+        }
     }
 } 

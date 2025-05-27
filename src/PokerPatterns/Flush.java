@@ -54,8 +54,30 @@ public class Flush extends PokerPattern {
     public int getPatternWeight() {
         return this.weight;
     }
+
     @Override
     public int getCritical(List<Card> cards) {
-        return Straight.getInstance().getCritical(cards);
+        // 返回同花五中最大的牌
+        return cards.stream().mapToInt(Card::getWeight).max().getAsInt();
+    }
+
+    @Override
+    public List<CardGroup> potentialCardGroup(List<Card> availableCards) {
+        List<CardGroup> result = new ArrayList<>();
+        
+        // 按花色分类
+        Map<Suit, List<Card>> suitMap = new HashMap<>();
+        for (Card card : availableCards) {
+            suitMap.computeIfAbsent(card.getSuit(), k -> new ArrayList<>()).add(card);
+        }
+        
+        // 对每种花色，如果牌数大于等于5，生成所有可能的五张组合
+        for (List<Card> suitCards : suitMap.values()) {
+            if (suitCards.size() >= 5) {
+                PatternMatchUtil.enumCombinationSimple(result, suitCards, 5);
+            }
+        }
+        
+        return result;
     }
 }

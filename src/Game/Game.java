@@ -162,6 +162,12 @@ public class Game {
             player.sortHand();
         }
         
+        // 显示每个非AI玩家的手牌和可能的牌型
+        for (Player player : players) {
+            displayManager.displayPlayerHand(player);
+            displayManager.displayPossiblePatterns(player);
+        }
+        
         // 重置游戏状态
         stateManager.reset();
         

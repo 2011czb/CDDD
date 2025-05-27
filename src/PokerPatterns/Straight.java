@@ -116,4 +116,10 @@ public class Straight extends PokerPattern {
         // 其他情况，返回最大点数的牌的权重
         return sortedCards.get(4).getWeight();
     }
+
+    @Override
+    public List<CardGroup> potentialCardGroup(List<Card> availableCards) {
+        AnnotatedCards annotatedCards = new AnnotatedCards(availableCards);
+        return PatternMatchUtil.getStraightCombinations(annotatedCards);
+    }
 }

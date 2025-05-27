@@ -1,6 +1,7 @@
 package PokerPatterns;
 
 import java.util.List;
+import java.util.ArrayList;
 import cards.Card;
 
 
@@ -40,4 +41,13 @@ public class One extends PokerPattern {
         return cards.get(0).getWeight();
     }
 
+    @Override
+    public List<CardGroup> potentialCardGroup(List<Card> availableCards) {
+        List<CardGroup> result = new ArrayList<>();
+        // 对于单张牌型，每张牌都是一个可能的组合
+        for (Card card : availableCards) {
+            result.add(new CardGroup(new Card[]{card}));
+        }
+        return result;
+    }
 }

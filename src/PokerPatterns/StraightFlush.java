@@ -1,6 +1,7 @@
 package PokerPatterns;
 
 import java.util.List;
+import java.util.ArrayList;
 import cards.Card;
 /**
  * 同花顺牌型实现
@@ -44,5 +45,20 @@ public class StraightFlush extends PokerPattern {
     @Override
     public int getCritical(List<Card> cards) {
         return Straight.getInstance().getCritical(cards);
+    }
+
+    @Override
+    public List<CardGroup> potentialCardGroup(List<Card> availableCards) {
+        // 先获取所有可能的顺子组合
+        List<CardGroup> straightGroups = Straight.getInstance().potentialCardGroup(availableCards);
+        List<CardGroup> result = new ArrayList<>();
+        
+        // 筛选出同花的顺子
+        for (CardGroup group : straightGroups) {
+            if (PatternMatchUtil.isFlush(group.getCards())) {
+                result.add(group);
+            }
+        }
+        return result;
     }
 }
