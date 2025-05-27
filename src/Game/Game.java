@@ -164,6 +164,11 @@ public class Game {
         
         // 重置游戏状态
         stateManager.reset();
+        
+        // 设置持有方块三的玩家为第一个出牌的玩家
+        int firstPlayerIndex = stateManager.selectFirstPlayer();
+        stateManager.setCurrentPlayerIndex(firstPlayerIndex);
+        System.out.println(stateManager.getCurrentPlayer().getName() + "持有方块三，由他先出牌");
     }
     
     /**
@@ -178,6 +183,8 @@ public class Game {
      * 游戏主循环
      */
     private void gameLoop() {
+
+
         while (!stateManager.isGameEnded()) {
             // 显示当前回合信息
             displayManager.displayCurrentTurn();

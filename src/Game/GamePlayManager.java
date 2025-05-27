@@ -74,8 +74,27 @@ public class GamePlayManager {
             return false;
         }
 
-        // 如果是第一手牌，或者上一个出牌的玩家是当前玩家（表示其他玩家都过牌）
-        if (lastCards == null || stateManager.getLastPlayerIndex() == stateManager.getCurrentPlayerIndex()) {
+        // 如果是第一手牌
+        if (lastCards == null) {
+            // 检查是否包含方块三（方块三的intValue是41）
+            boolean hasDiamondThree = false;
+            for (Card card : cards) {
+                if (card.getIntValue() == 41) {
+                    hasDiamondThree = true;
+                    break;
+                }
+            }
+            
+            if (hasDiamondThree) {
+                return true;
+            } else {
+                System.out.println("你是第一个出牌的玩家，必须出包含方块三的牌型");
+                return false;
+            }
+        }
+
+        //上一个出牌的玩家是当前玩家（表示其他玩家都过牌）
+        if(stateManager.getLastPlayerIndex() == stateManager.getCurrentPlayerIndex()){
             return true;
         }
 
