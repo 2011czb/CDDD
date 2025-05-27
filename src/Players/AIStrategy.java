@@ -303,11 +303,7 @@ public class AIStrategy {
             }
         }
         
-        // 如果没有找到合适的牌型组合，就只出方块三
-        List<Integer> indices = new ArrayList<>();
-        indices.add(hand.indexOf(diamondThree));
-        List<Card> playedCards = player.playCards(indices);
-        System.out.println(player.getName() + "出牌：" + playedCards.get(0).getDisplayName());
-        return playedCards;
+        // 理论上不会执行到这里，因为遍历到最后一定会找到单张牌型
+        throw new IllegalStateException("无法找到包含方块三的牌型组合");
     }
 }

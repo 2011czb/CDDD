@@ -53,9 +53,9 @@ public class StraightFlush extends PokerPattern {
         List<CardGroup> straightGroups = Straight.getInstance().potentialCardGroup(availableCards);
         List<CardGroup> result = new ArrayList<>();
         
-        // 筛选出同花的顺子
+        // 筛选出同花顺
         for (CardGroup group : straightGroups) {
-            if (PatternMatchUtil.isFlush(group.getCards())) {
+            if (match(group.getCards())) {
                 result.add(group);
             }
         }
