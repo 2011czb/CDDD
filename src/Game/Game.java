@@ -15,11 +15,18 @@ import cards.Deck;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import Rules.Rule;
+import Rules.NorthRule;
+import Rules.SouthRule;
 
 public class Game {
     // 游戏模式常量
     public static final int MODE_SINGLE_PLAYER = 1; // 单人模式（1人对战3个AI）
     public static final int MODE_MULTIPLAYER = 2;   // 多人模式（4人联机对战）
+    
+    // 游戏规则常量
+    public static final int RULE_NORTH = 1; // 北方规则
+    public static final int RULE_SOUTH = 2; // 南方规则
     
     private List<Player> players;       // 玩家列表
     private Deck deck;                  // 牌堆
@@ -29,20 +36,22 @@ public class Game {
     private boolean gameEnded;          // 游戏是否结束
     private Player winner;              // 获胜者
     private int gameMode;               // 游戏模式
+    private final Rule gameRule;  // 添加规则实例
     
     /**
      * 创建单人模式游戏（1个玩家对战3个AI）
      * @param playerName 人类玩家的名称
+     * @param ruleType 规则类型（RULE_NORTH 或 RULE_SOUTH）
      * @return 创建的游戏实例
      */
-    public static Game createSinglePlayerGame(String playerName) {
+    public static Game createSinglePlayerGame(String playerName, int ruleType) {
         List<String> playerNames = new ArrayList<>();
         playerNames.add(playerName);  // 人类玩家
         playerNames.add("AI玩家1");   // AI玩家
         playerNames.add("AI玩家2");   // AI玩家
         playerNames.add("AI玩家3");   // AI玩家
         
-        Game game = new Game(playerNames, MODE_SINGLE_PLAYER);
+        Game game = new Game(playerNames, MODE_SINGLE_PLAYER, ruleType);
         
         // 设置AI玩家
         for (int i = 1; i < game.players.size(); i++) {
@@ -55,22 +64,24 @@ public class Game {
     /**
      * 创建多人联机模式游戏（4个人类玩家）
      * @param playerNames 玩家名称列表，应该包含4个名称
+     * @param ruleType 规则类型（RULE_NORTH 或 RULE_SOUTH）
      * @return 创建的游戏实例
      */
-    public static Game createMultiplayerGame(List<String> playerNames) {
+    public static Game createMultiplayerGame(List<String> playerNames, int ruleType) {
         if (playerNames.size() != 4) {
             throw new IllegalArgumentException("多人模式需要恰好4个玩家");
         }
         
-        return new Game(playerNames, MODE_MULTIPLAYER);
+        return new Game(playerNames, MODE_MULTIPLAYER, ruleType);
     }
     
     /**
      * 构造函数，创建游戏并初始化玩家
      * @param playerNames 玩家姓名列表
      * @param gameMode 游戏模式（单人/多人）
+     * @param ruleType 规则类型（RULE_NORTH 或 RULE_SOUTH）
      */
-    private Game(List<String> playerNames, int gameMode) {
+    private Game(List<String> playerNames, int gameMode, int ruleType) {
         // 初始化游戏
         this.players = new ArrayList<>();
         for (String name : playerNames) {
@@ -83,6 +94,18 @@ public class Game {
         this.gameEnded = false;
         this.winner = null;
         this.gameMode = gameMode;
+        
+        // 根据规则类型设置游戏规则
+        switch (ruleType) {
+            case RULE_NORTH:
+                this.gameRule = NorthRule.getInstance();
+                break;
+            case RULE_SOUTH:
+                this.gameRule = SouthRule.getInstance();
+                break;
+            default:
+                throw new IllegalArgumentException("无效的规则类型：" + ruleType);
+        }
     }
     
     /**
@@ -194,8 +217,6 @@ public class Game {
             // 处理出牌结果
             if (playedCards != null && !playedCards.isEmpty()) {
                 handlePlayedCards(currentPlayer, playedCards);
-            } else {
-                System.out.println(currentPlayer.getName() + "选择不出牌");
             }
             
             // 检查游戏是否结束
@@ -211,7 +232,6 @@ public class Game {
     
     /**
      * 玩家出牌的逻辑
-     * 注意：这里需要根据实际需求实现，可能是用户输入、AI决策等
      * @param player 当前玩家
      * @return 玩家选择的牌
      */
@@ -243,6 +263,9 @@ public class Game {
             return playerPlayCards(player); // 重新出牌
         }
         
+        // 出牌合法，从玩家手牌中移除这些牌
+        player.removeCards(playedCards);
+        
         return playedCards;
     }
     
@@ -254,7 +277,6 @@ public class Game {
     private void handlePlayedCards(Player player, List<Card> cards) {
         // 如果玩家过牌，不更新lastCards和lastPlayerIndex
         if (cards == null || cards.isEmpty()) {
-            System.out.println(player.getName() + "选择不出牌");
             return;
         }
         
@@ -329,34 +351,6 @@ public class Game {
     }
     
     /**
-     * 判断牌型
-     * @param cards 要判断的牌组
-     * @return 对应的牌型，如果不是有效牌型则返回null
-     */
-    private PokerPattern identifyPattern(List<Card> cards) {
-        // 按照优先级从高到低检查各种牌型
-        if (StraightFlush.getInstance().match(cards)) {
-            return StraightFlush.getInstance();
-        } else if (FourofaKind.getInstance().match(cards)) {
-            return FourofaKind.getInstance();
-        } else if (FullHouse.getInstance().match(cards)) {
-            return FullHouse.getInstance();
-        } else if (Flush.getInstance().match(cards)) {
-            return Flush.getInstance();
-        } else if (Straight.getInstance().match(cards)) {
-            return Straight.getInstance();
-        } else if (Three.getInstance().match(cards)) {
-            return Three.getInstance();
-        } else if (Pair.getInstance().match(cards)) {
-            return Pair.getInstance();
-        } else if (One.getInstance().match(cards)) {
-            return One.getInstance();
-        }
-        
-        return null; // 不是有效的牌型
-    }
-    
-    /**
      * 判断当前出牌是否有效
      * @param cards 当前出的牌
      * @param lastCards 上一手牌
@@ -369,39 +363,22 @@ public class Game {
         }
         
         // 判断当前出的牌是否是有效牌型
-        PokerPattern currentPattern = identifyPattern(cards);
-        if (currentPattern == null) {
+        if (!gameRule.isValidPattern(cards)) {
             return false; // 不是有效的牌型
         }
         
         // 如果是第一手牌，或者上一个出牌的玩家是当前玩家（表示其他玩家都过牌）
         if (lastCards == null || lastPlayerIndex == currentPlayerIndex) {
-            // 自由出牌时，只需要验证是否是有效牌型
-            return currentPattern != null;
+            return true; // 自由出牌时，只需要验证是否是有效牌型
         }
         
-        // 判断与上一手牌型是否相同，以及是否更大
-        PokerPattern lastPattern = identifyPattern(lastCards);
-        
-        // 牌型数量必须相同
-        if (cards.size() != lastCards.size()) {
+        // 使用规则系统判断是否可以比较大小
+        if (!gameRule.canCompare(cards, lastCards)) {
             return false;
         }
         
-        // 根据PokerPatterns中的规则：
-        // 1. 牌型权重不同时，权重高的牌型胜出
-        if (currentPattern.getPatternWeight() > lastPattern.getPatternWeight()) {
-            return true; // 当前牌型权重更高
-        } 
-        // 2. 牌型权重相同时，比较关键牌点数
-        else if (currentPattern.getPatternWeight() == lastPattern.getPatternWeight()) {
-            // 调用牌型对应的getCritical方法判断大小
-            int currentCritical = currentPattern.getCritical(cards);
-            int lastCritical = lastPattern.getCritical(lastCards);
-            return currentCritical > lastCritical;
-        }
-        
-        return false; // 默认返回false
+        // 使用规则系统比较大小
+        return gameRule.compareCards(cards, lastCards) > 0;
     }
     
     /**
@@ -417,5 +394,21 @@ public class Game {
     
     public Player getCurrentPlayer() {
         return players.get(currentPlayerIndex);
+    }
+    
+    /**
+     * 获取当前游戏规则类型
+     * @return 规则类型（RULE_NORTH 或 RULE_SOUTH）
+     */
+    public int getRuleType() {
+        return gameRule instanceof NorthRule ? RULE_NORTH : RULE_SOUTH;
+    }
+    
+    /**
+     * 获取当前游戏规则的名称
+     * @return 规则名称
+     */
+    public String getRuleName() {
+        return gameRule instanceof NorthRule ? "北方规则" : "南方规则";
     }
 }

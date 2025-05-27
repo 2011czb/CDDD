@@ -45,8 +45,9 @@ public class Flush extends PokerPattern {
         return true;
     }
 
-        return true;
-    }
+
+    
+
 
     @Override
     public String getName() {

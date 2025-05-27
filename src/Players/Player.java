@@ -103,20 +103,19 @@ public class Player {
         
         // 按照索引从手牌中取出卡牌
         List<Card> playedCards = new ArrayList<>();
-        // 先排序索引，从大到小（这样移除卡牌时不会影响前面的索引）
-        List<Integer> sortedIndices = new ArrayList<>(cardIndices);
-        Collections.sort(sortedIndices, Collections.reverseOrder());
-        
-        for (int index : sortedIndices) {
+        for (int index : cardIndices) {
             playedCards.add(hand.get(index));
         }
         
-        // 移除已出的牌
-        for (int index : sortedIndices) {
-            hand.remove(index);
-        }
-        
         return playedCards;
+    }
+    
+    /**
+     * 从手牌中移除指定的牌
+     * @param cards 要移除的牌列表
+     */
+    public void removeCards(List<Card> cards) {
+        hand.removeAll(cards);
     }
     
     /**

@@ -42,6 +42,7 @@ public class Main {
                 System.out.println("无效选择，默认进入单人模式");
                 playSinglePlayerMode();
         }
+        scanner.close();
     }
     
     /**
@@ -50,6 +51,23 @@ public class Main {
     private static void playSinglePlayerMode() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("\n===== 单人模式 =====");
+        
+        // 选择游戏规则
+        System.out.println("请选择游戏规则：");
+        System.out.println("1. 北方规则");
+        System.out.println("2. 南方规则");
+        
+        int ruleChoice = 1;
+        try {
+            ruleChoice = Integer.parseInt(scanner.nextLine().trim());
+            if (ruleChoice != 1 && ruleChoice != 2) {
+                System.out.println("无效选择，默认使用北方规则");
+                ruleChoice = 1;
+            }
+        } catch (Exception e) {
+            System.out.println("输入无效，默认使用北方规则");
+        }
+        
         System.out.println("请输入你的名字：");
         String playerName = scanner.nextLine().trim();
         if (playerName.isEmpty()) {
@@ -57,16 +75,10 @@ public class Main {
         }
         
         // 创建单人模式游戏
-        Game game = Game.createSinglePlayerGame(playerName);
-        
-        // 初始化游戏
-        game.initGame();
+        Game game = Game.createSinglePlayerGame(playerName, ruleChoice);
         
         // 开始游戏
-        System.out.println("\n游戏开始！");
-        
-        // 这里简化处理，直接调用game的startGame方法
-        // 实际应用中可能需要更复杂的控制逻辑
+        System.out.println("\n游戏开始！使用" + game.getRuleName());
         game.startGame();
     }
     
@@ -76,6 +88,23 @@ public class Main {
     private static void playMultiplayerMode() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("\n===== 多人模式 =====");
+        
+        // 选择游戏规则
+        System.out.println("请选择游戏规则：");
+        System.out.println("1. 北方规则");
+        System.out.println("2. 南方规则");
+        
+        int ruleChoice = 1;
+        try {
+            ruleChoice = Integer.parseInt(scanner.nextLine().trim());
+            if (ruleChoice != 1 && ruleChoice != 2) {
+                System.out.println("无效选择，默认使用北方规则");
+                ruleChoice = 1;
+            }
+        } catch (Exception e) {
+            System.out.println("输入无效，默认使用北方规则");
+        }
+        
         System.out.println("请选择联机方式：");
         System.out.println("1. 创建房间（作为主机）");
         System.out.println("2. 加入房间（作为客户端）");
@@ -127,16 +156,13 @@ public class Main {
                 playerNames.add("玩家4");
                 
                 // 创建多人模式游戏
-                Game game = Game.createMultiplayerGame(playerNames);
+                Game game = Game.createMultiplayerGame(playerNames, ruleChoice);
                 
                 // 发送游戏开始信号
                 networkManager.sendGameStartSignal(game);
                 
-                // 初始化游戏
-                game.initGame();
-                
                 // 开始游戏
-                System.out.println("\n游戏开始！");
+                System.out.println("\n游戏开始！使用" + game.getRuleName());
                 game.startGame();
             } else {
                 System.out.println("等待超时，未收集到足够的玩家");
@@ -262,12 +288,12 @@ public class Main {
     private static void testGameInit() {
         // 创建游戏并初始化玩家
         List<String> playerNames = Arrays.asList("玩家1", "玩家2", "玩家3", "玩家4");
-        Game game = Game.createMultiplayerGame(playerNames);
+        Game game = Game.createMultiplayerGame(playerNames, Game.RULE_NORTH); // 使用北方规则进行测试
         
         // 初始化游戏（发牌）
         game.initGame();
         
-        System.out.println("游戏初始化测试完成");
+        System.out.println("游戏初始化测试完成，使用" + game.getRuleName());
         
         // 显示所有玩家的手牌
         for (Player player : game.getPlayers()) {
