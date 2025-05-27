@@ -10,6 +10,12 @@ import Rules.Rule;
 import Rules.NorthRule;
 import Rules.SouthRule;
 
+/*game：游戏初始化，主循环，管理基本游戏状态
+ * GameStateManager：管理游戏状态，包括当前玩家、游戏是否结束、获胜者等
+ * GamePlayManager：处理玩家出牌逻辑，验证出牌是否合法
+ * GameDisplayManager：显示游戏界面，包括当前玩家、游戏状态、出牌结果等
+ */
+
 public class Game {
     // 游戏模式常量
     public static final int MODE_SINGLE_PLAYER = 1; // 单人模式（1人对战3个AI）
@@ -19,21 +25,18 @@ public class Game {
     public static final int RULE_NORTH = 1; // 北方规则
     public static final int RULE_SOUTH = 2; // 南方规则
     
-    private List<Player> players;       // 玩家列表
-    private Deck deck;                  // 牌堆
-    private int currentPlayerIndex;     // 当前玩家索引
-    private int lastPlayerIndex;        // 上一个实际出牌的玩家索引
-    private List<Card> lastPlayedCards; // 上一次出的牌
-    private boolean gameEnded;          // 游戏是否结束
-    private Player winner;              // 获胜者
-    private int gameMode;               // 游戏模式
-    private final Rule gameRule;  // 添加规则实例
+    private final List<Player> players;       // 玩家列表
+    private Deck deck;                        // 牌堆
+    private final int gameMode;               // 游戏模式
+    private final Rule gameRule;              // 游戏规则
+    
+    // 游戏管理器
+    private final GameStateManager stateManager;
+    private final GamePlayManager playManager;
+    private final GameDisplayManager displayManager;
     
     /**
      * 创建单人模式游戏（1个玩家对战3个AI）
-     * @param playerName 人类玩家的名称
-     * @param ruleType 规则类型（RULE_NORTH 或 RULE_SOUTH）
-     * @return 创建的游戏实例
      */
     public static Game createSinglePlayerGame(String playerName, int ruleType) {
         List<String> playerNames = new ArrayList<>();
@@ -54,9 +57,6 @@ public class Game {
     
     /**
      * 创建多人联机模式游戏（4个人类玩家）
-     * @param playerNames 玩家名称列表，应该包含4个名称
-     * @param ruleType 规则类型（RULE_NORTH 或 RULE_SOUTH）
-     * @return 创建的游戏实例
      */
     public static Game createMultiplayerGame(List<String> playerNames, int ruleType) {
         if (playerNames.size() != 4) {
@@ -68,23 +68,16 @@ public class Game {
     
     /**
      * 构造函数，创建游戏并初始化玩家
-     * @param playerNames 玩家姓名列表
-     * @param gameMode 游戏模式（单人/多人）
-     * @param ruleType 规则类型（RULE_NORTH 或 RULE_SOUTH）
      */
     private Game(List<String> playerNames, int gameMode, int ruleType) {
-        // 初始化游戏
+        // 初始化玩家列表
         this.players = new ArrayList<>();
         for (String name : playerNames) {
             players.add(new Player(name));
         }
-        this.deck = new Deck();
-        this.currentPlayerIndex = 0;
-        this.lastPlayerIndex = -1;  // 初始化为-1，表示还没有玩家出牌
-        this.lastPlayedCards = null;
-        this.gameEnded = false;
-        this.winner = null;
+        
         this.gameMode = gameMode;
+        this.deck = new Deck();
         
         // 根据规则类型设置游戏规则
         switch (ruleType) {
@@ -97,11 +90,15 @@ public class Game {
             default:
                 throw new IllegalArgumentException("无效的规则类型：" + ruleType);
         }
+        
+        // 初始化游戏管理器
+        this.stateManager = new GameStateManager(players);
+        this.playManager = new GamePlayManager(gameRule, stateManager);
+        this.displayManager = new GameDisplayManager(stateManager);
     }
     
     /**
      * 将指定索引的玩家设置为AI
-     * @param playerIndex 玩家索引
      */
     public void setPlayerAsAI(int playerIndex) {
         if (playerIndex >= 0 && playerIndex < players.size()) {
@@ -112,7 +109,6 @@ public class Game {
     
     /**
      * 获取游戏模式
-     * @return 游戏模式（单人/多人）
      */
     public int getGameMode() {
         return gameMode;
@@ -120,7 +116,6 @@ public class Game {
     
     /**
      * 获取玩家列表
-     * @return 玩家列表
      */
     public List<Player> getPlayers() {
         return Collections.unmodifiableList(players);
@@ -135,10 +130,8 @@ public class Game {
             player.clearHand();
         }
         
-        // 创建一副新牌（标准扑克牌一副52张）
+        // 创建一副新牌并洗牌
         this.deck = new Deck();
-        
-        // 洗牌
         deck.shuffle();
         
         // 发牌（每人13张牌）
@@ -170,11 +163,7 @@ public class Game {
         }
         
         // 重置游戏状态
-        currentPlayerIndex = 0;
-        lastPlayerIndex = -1;  // 重置为-1，表示还没有玩家出牌
-        lastPlayedCards = null;
-        gameEnded = false;
-        winner = null;
+        stateManager.reset();
     }
     
     /**
@@ -189,207 +178,50 @@ public class Game {
      * 游戏主循环
      */
     private void gameLoop() {
-        while (!gameEnded) {
-            Player currentPlayer = players.get(currentPlayerIndex);
-            System.out.println(currentPlayer.getName() + "的回合");
+        while (!stateManager.isGameEnded()) {
+            // 显示当前回合信息
+            displayManager.displayCurrentTurn();
             
-            // 更新所有玩家的索引
-            for (Player player : players) {
-                player.setLastPlayerIndex(lastPlayerIndex);
-                player.setCurrentPlayerIndex(currentPlayerIndex);
-            }
+            // 获取当前玩家
+            Player currentPlayer = stateManager.getCurrentPlayer();
             
             // 显示当前玩家的手牌
-            displayPlayerHand(currentPlayer);
+            displayManager.displayPlayerHand(currentPlayer);
             
-            // 玩家出牌（这里需要实现玩家出牌的逻辑）
-            List<Card> playedCards = playerPlayCards(currentPlayer);
+            // 处理玩家出牌
+            List<Card> playedCards = playManager.handlePlayerPlay(currentPlayer);
             
-            // 处理出牌结果
-            if (playedCards != null && !playedCards.isEmpty()) {
-                handlePlayedCards(currentPlayer, playedCards);
-            }
+            // 显示出牌结果
+            displayManager.displayPlayedCards(currentPlayer, playedCards);
             
-            // 检查游戏是否结束
-            checkGameEnd();
+            // 更新游戏状态
+            stateManager.updateState(currentPlayer, playedCards);
             
             // 转到下一个玩家
-            nextPlayer();
+            stateManager.nextPlayer();
         }
         
         // 游戏结束，显示结果
-        announceWinner();
-    }
-    
-    /**
-     * 玩家出牌的逻辑
-     * @param player 当前玩家
-     * @return 玩家选择的牌
-     */
-    private List<Card> playerPlayCards(Player player) {
-        // 调用玩家的play方法，传入上一手牌
-        List<Card> playedCards = player.play(lastPlayedCards);
-        
-        // 如果是第一个出牌的玩家，不能过牌
-        if (lastPlayerIndex == -1) {
-            if (playedCards == null || playedCards.isEmpty()) {
-                System.out.println("你是第一个出牌的玩家，必须出牌");
-                return playerPlayCards(player); // 重新出牌
-            }
-        }
-        
-        // 如果不是第一个出牌的玩家，可以选择过牌
-        if (playedCards == null || playedCards.isEmpty()) {
-            // 如果上一个出牌的玩家是当前玩家，且其他玩家都过牌，则当前玩家不能过牌
-            if (lastPlayerIndex == currentPlayerIndex) {
-                System.out.println("其他玩家都过牌了，你必须出牌");
-                return playerPlayCards(player); // 重新出牌
-            }
-            return playedCards; // 允许过牌
-        }
-        
-        // 验证出牌是否合法
-        if (!isValidPlay(playedCards, lastPlayedCards)) {
-            System.out.println("出牌不符合规则，请重新选择");
-            return playerPlayCards(player); // 重新出牌
-        }
-        
-        // 出牌合法，从玩家手牌中移除这些牌
-        player.removeCards(playedCards);
-        
-        return playedCards;
-    }
-    
-    /**
-     * 处理玩家出牌
-     * @param player 当前玩家
-     * @param cards 玩家出的牌
-     */
-    private void handlePlayedCards(Player player, List<Card> cards) {
-        // 如果玩家过牌，不更新lastCards和lastPlayerIndex
-        if (cards == null || cards.isEmpty()) {
-            return;
-        }
-        
-        // 玩家实际出牌，更新最后出牌信息
-        System.out.println(player.getName() + "出牌：");
-        for (Card card : cards) {
-            System.out.print(card.getDisplayName() + " ");
-        }
-        System.out.println();
-        
-        // 更新最后出牌信息
-        lastPlayedCards = cards;
-        lastPlayerIndex = currentPlayerIndex;  // 只有在实际出牌时才更新lastPlayerIndex
-        
-        // 检查玩家手牌是否为空
-        if (player.getHand().isEmpty()) {
-            gameEnded = true;
-            winner = player;
-        }
-    }
-    
-    /**
-     * 切换到下一个玩家
-     */
-    private void nextPlayer() {
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-    }
-    
-    /**
-     * 显示玩家手牌
-     * @param player 要显示手牌的玩家
-     */
-    private void displayPlayerHand(Player player) {
-        Player currentPlayer = players.get(currentPlayerIndex);
-        
-        // 只有当前回合的玩家可以看到自己的详细手牌
-        if (player.equals(currentPlayer)) {
-            System.out.println(player.getName() + "的手牌：");
-            List<Card> hand = player.getHand();
-            for (int i = 0; i < hand.size(); i++) {
-                System.out.print((i + 1) + "." + hand.get(i).getDisplayName() + " ");
-            }
-            System.out.println();
-        } else {
-            // 其他玩家只显示牌的数量
-            System.out.println(player.getName() + "的手牌数量：" + player.getHand().size());
-        }
-    }
-    
-    /**
-     * 检查游戏是否结束
-     */
-    private void checkGameEnd() {
-        for (Player player : players) {
-            if (player.getHand().isEmpty()) {
-                gameEnded = true;
-                winner = player;
-                break;
-            }
-        }
-    }
-    
-    /**
-     * 宣布获胜者
-     */
-    private void announceWinner() {
-        if (winner != null) {
-            System.out.println("游戏结束！" + winner.getName() + "获胜！");
-        } else {
-            System.out.println("游戏结束！没有玩家获胜。");
-        }
-    }
-    
-    /**
-     * 判断当前出牌是否有效
-     * @param cards 当前出的牌
-     * @param lastCards 上一手牌
-     * @return 是否有效
-     */
-    private boolean isValidPlay(List<Card> cards, List<Card> lastCards) {
-        // 如果没有出牌，始终有效（表示过）
-        if (cards == null || cards.isEmpty()) {
-            return true;
-        }
-        
-        // 判断当前出的牌是否是有效牌型
-        if (!gameRule.isValidPattern(cards)) {
-            return false; // 不是有效的牌型
-        }
-        
-        // 如果是第一手牌，或者上一个出牌的玩家是当前玩家（表示其他玩家都过牌）
-        if (lastCards == null || lastPlayerIndex == currentPlayerIndex) {
-            return true; // 自由出牌时，只需要验证是否是有效牌型
-        }
-        
-        // 使用规则系统判断是否可以比较大小
-        if (!gameRule.canCompare(cards, lastCards)) {
-            return false;
-        }
-        
-        // 使用规则系统比较大小
-        return gameRule.compareCards(cards, lastCards) > 0;
+        displayManager.displayGameEnd();
     }
     
     /**
      * 获取游戏状态
      */
     public boolean isGameEnded() {
-        return gameEnded;
+        return stateManager.isGameEnded();
     }
     
     public Player getWinner() {
-        return winner;
+        return stateManager.getWinner();
     }
     
     public Player getCurrentPlayer() {
-        return players.get(currentPlayerIndex);
+        return stateManager.getCurrentPlayer();
     }
     
     /**
      * 获取当前游戏规则类型
-     * @return 规则类型（RULE_NORTH 或 RULE_SOUTH）
      */
     public int getRuleType() {
         return gameRule instanceof NorthRule ? RULE_NORTH : RULE_SOUTH;
@@ -397,7 +229,6 @@ public class Game {
     
     /**
      * 获取当前游戏规则的名称
-     * @return 规则名称
      */
     public String getRuleName() {
         return gameRule instanceof NorthRule ? "北方规则" : "南方规则";
