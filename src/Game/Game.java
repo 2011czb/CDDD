@@ -1,15 +1,6 @@
 package Game;
 
 import Players.Player;
-import PokerPatterns.Flush;
-import PokerPatterns.FourofaKind;
-import PokerPatterns.FullHouse;
-import PokerPatterns.One;
-import PokerPatterns.Pair;
-import PokerPatterns.PokerPattern;
-import PokerPatterns.Straight;
-import PokerPatterns.StraightFlush;
-import PokerPatterns.Three;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;

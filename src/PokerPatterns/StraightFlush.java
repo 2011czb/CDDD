@@ -2,7 +2,6 @@ package PokerPatterns;
 
 import java.util.List;
 import cards.Card;
-import cards.Suit;
 /**
  * 同花顺牌型实现
  * */

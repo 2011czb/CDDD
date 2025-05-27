@@ -24,8 +24,6 @@ public class AIStrategy {
      * @return 决定出的牌
      */
     public static List<Card> makeDecision(Player player, List<Card> lastCards) {
-        List<Card> hand = player.getHand();
-        
         // 如果是第一手牌，随机出一张
         if (lastCards == null) {
             return playRandomCard(player);
