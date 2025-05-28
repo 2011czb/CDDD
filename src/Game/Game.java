@@ -1,6 +1,6 @@
 package Game;
 
-import Players.Player;
+import Players.*;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;
@@ -39,22 +39,15 @@ public class Game {
      * 创建单人模式游戏（1个玩家对战3个AI）
      */
     public static Game createSinglePlayerGame(String playerName, int ruleType) {
-        List<String> playerNames = new ArrayList<>();
-        playerNames.add(playerName);  // 人类玩家
-        playerNames.add("AI玩家1");   // AI玩家
-        playerNames.add("AI玩家2");   // AI玩家
-        playerNames.add("AI玩家3");   // AI玩家
-        
-        Game game = new Game(playerNames, MODE_SINGLE_PLAYER, ruleType);
-        
-        // 设置AI玩家
-        for (int i = 1; i < game.players.size(); i++) {
-            game.setPlayerAsAI(i);
-        }
-        
-        return game;
+        List<Player> players = new ArrayList<>();
+        players.add(new HumanPlayer(playerName));  // 人类玩家
+        players.add(new AIPlayer("AI玩家1"));     // AI玩家
+        players.add(new AIPlayer("AI玩家2"));     // AI玩家
+        players.add(new AIPlayer("AI玩家3"));     // AI玩家
+
+        return new Game(players, MODE_SINGLE_PLAYER, ruleType);
     }
-    
+
     /**
      * 创建多人联机模式游戏（4个人类玩家）
      */
@@ -62,19 +55,21 @@ public class Game {
         if (playerNames.size() != 4) {
             throw new IllegalArgumentException("多人模式需要恰好4个玩家");
         }
-        
-        return new Game(playerNames, MODE_MULTIPLAYER, ruleType);
+
+        List<Player> players = new ArrayList<>();
+        for (String name : playerNames) {
+            players.add(new HumanPlayer(name));  // 全部为人类玩家
+        }
+
+        return new Game(players, MODE_MULTIPLAYER, ruleType);
     }
     
     /**
      * 构造函数，创建游戏并初始化玩家
      */
-    private Game(List<String> playerNames, int gameMode, int ruleType) {
+    private Game(List<Player> players, int gameMode, int ruleType) {
         // 初始化玩家列表
-        this.players = new ArrayList<>();
-        for (String name : playerNames) {
-            players.add(new Player(name));
-        }
+        this.players = players;  // 直接使用传入的玩家列表
         
         this.gameMode = gameMode;
         this.deck = new Deck();
@@ -95,16 +90,6 @@ public class Game {
         this.stateManager = new GameStateManager(players);
         this.playManager = new GamePlayManager(gameRule, stateManager);
         this.displayManager = new GameDisplayManager(stateManager);
-    }
-    
-    /**
-     * 将指定索引的玩家设置为AI
-     */
-    public void setPlayerAsAI(int playerIndex) {
-        if (playerIndex >= 0 && playerIndex < players.size()) {
-            Player currentPlayer = players.get(playerIndex);
-            players.set(playerIndex, new Player(currentPlayer.getName(), true));
-        }
     }
     
     /**
@@ -161,13 +146,15 @@ public class Game {
         for (Player player : players) {
             player.sortHand();
         }
-        
+
         // 显示每个非AI玩家的手牌和可能的牌型
-        for (Player player : players) {
-            displayManager.displayPlayerHand(player);
-            displayManager.displayPossiblePatterns(player);
-        }
-        
+        //for (int i = 0; i < players.size(); i++) {
+        //    if(players.get(i) instanceof HumanPlayer){
+        //      displayManager.displayPlayerHand(players.get(i));
+        //        displayManager.displayPossiblePatterns(players.get(i));
+        //    }
+        //}
+
         // 重置游戏状态
         stateManager.reset();
         
@@ -203,7 +190,7 @@ public class Game {
             
             // 处理玩家出牌
             List<Card> playedCards = playManager.handlePlayerPlay(currentPlayer);
-            
+
             // 显示出牌结果
             displayManager.displayPlayedCards(currentPlayer, playedCards);
             

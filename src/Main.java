@@ -1,6 +1,6 @@
 import Game.Game;
 import Network.NetworkManager;
-import Players.Player;
+import Players.*;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;
@@ -304,8 +304,8 @@ public class Main {
         System.out.println("\n===== 人机对战测试 =====");
         
         // 创建玩家和AI玩家
-        Player human = new Player("玩家");
-        Player ai = new Player("电脑", true); // 第二个参数true表示这是AI玩家
+        Player human = new HumanPlayer("玩家");
+        Player ai = new AIPlayer("电脑");
         
         // 创建牌堆并洗牌
         Deck deck = new Deck();
@@ -371,8 +371,8 @@ public class Main {
         System.out.println("\n===== 手动发牌和出牌演示 =====");
         
         // 创建玩家
-        Player player1 = new Player("玩家A");
-        Player player2 = new Player("玩家B");
+        Player player1 = new HumanPlayer("玩家A");
+        Player player2 = new HumanPlayer("玩家B");
         
         // 创建牌堆并洗牌
         Deck deck = new Deck();

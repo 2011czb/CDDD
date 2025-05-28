@@ -2,6 +2,8 @@ package PokerPatterns;
 
 import java.util.List;
 import java.util.ArrayList;
+
+import PokerPatterns.basis.*;
 import cards.*;
 
 /**

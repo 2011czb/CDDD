@@ -1,8 +1,12 @@
-package PokerPatterns;
+package PokerPatterns.basis;
 
 
 import java.util.List;
 import java.util.ArrayList;
+
+import PokerPatterns.generator.AnnotatedCards;
+import PokerPatterns.generator.CardGroup;
+import PokerPatterns.generator.PatternMatchUtil;
 import cards.Card;
 
 /**

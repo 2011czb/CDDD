@@ -1,0 +1,26 @@
+package Players;
+
+import cards.Card;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * AI玩家
+ * */
+public class AIPlayer extends Player {
+    private final AIStrategy aiStrategy;
+
+    public AIPlayer(String name, AIStrategy strategy) {
+        super(name);
+        this.aiStrategy = strategy;
+    }
+
+    public AIPlayer(String name) {
+        this(name, SimpleAIStrategy.INSTANCE);
+    }
+
+    @Override
+    public List<Card> play(List<Card> lastCards) {
+        return aiStrategy.makeDecision(this, lastCards);
+    }
+}

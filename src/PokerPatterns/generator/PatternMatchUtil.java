@@ -1,4 +1,4 @@
-package PokerPatterns;
+package PokerPatterns.generator;
 
 import cards.Card;
 import cards.Rank;

@@ -1,8 +1,11 @@
 package Game;
 
+import Players.HumanPlayer;
 import Players.Player;
+import PokerPatterns.basis.*;
+import PokerPatterns.generator.CardGroup;
 import cards.Card;
-import PokerPatterns.*;
+
 import java.util.*;
 
 /**
@@ -22,15 +25,16 @@ public class GameDisplayManager {
      */
     public void displayPlayerHand(Player player) {
         Player currentPlayer = stateManager.getCurrentPlayer();
-        
+
         // 只有当前回合的玩家可以看到自己的详细手牌
-        if (player.equals(currentPlayer)) {
+        if (player == currentPlayer && player instanceof HumanPlayer) {
             System.out.println(player.getName() + "的手牌：");
             List<Card> hand = player.getHand();
             for (int i = 0; i < hand.size(); i++) {
                 System.out.print((i + 1) + "." + hand.get(i).getDisplayName() + " ");
             }
             System.out.println();
+            displayPossiblePatterns(player);
         } else {
             // 其他玩家只显示牌的数量
             System.out.println(player.getName() + "的手牌数量：" + player.getHand().size());
@@ -44,7 +48,6 @@ public class GameDisplayManager {
      */
     public void displayPlayedCards(Player player, List<Card> cards) {
         if (cards == null || cards.isEmpty()) {
-            System.out.println(player.getName() + "选择不出牌");
             return;
         }
 
@@ -55,9 +58,9 @@ public class GameDisplayManager {
         System.out.println();
 
         // 如果是非AI玩家出牌，更新并显示可能的牌型
-        if (!player.isAI()) {
-            updateAndDisplayPossiblePatterns();
-        }
+        //if (player instanceof HumanPlayer) {
+        //    updateAndDisplayPossiblePatterns();
+        //}
     }
 
     /**
@@ -85,11 +88,6 @@ public class GameDisplayManager {
      * @param player 要分析的玩家
      */
     public void displayPossiblePatterns(Player player) {
-        // 只分析非AI玩家的手牌
-        if (player.isAI()) {
-            return;
-        }
-
         System.out.println("\n" + player.getName() + "的手牌中所有可能的牌型：");
         List<Card> hand = player.getHand();
         
@@ -128,7 +126,7 @@ public class GameDisplayManager {
      */
     public void updateAndDisplayPossiblePatterns() {
         Player currentPlayer = stateManager.getCurrentPlayer();
-        if (!currentPlayer.isAI()) {
+        if (currentPlayer instanceof HumanPlayer) {
             displayPossiblePatterns(currentPlayer);
         }
     }

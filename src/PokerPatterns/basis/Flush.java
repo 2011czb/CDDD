@@ -1,6 +1,9 @@
-package PokerPatterns;
+package PokerPatterns.basis;
 
 import java.util.*;
+
+import PokerPatterns.generator.CardGroup;
+import PokerPatterns.generator.PatternMatchUtil;
 import cards.Card;
 import cards.Suit;
 

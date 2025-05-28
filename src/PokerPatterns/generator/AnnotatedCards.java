@@ -1,4 +1,4 @@
-package PokerPatterns;
+package PokerPatterns.generator;
 
 import cards.Card;
 import java.util.*;
@@ -7,7 +7,8 @@ import java.util.*;
  * 用于管理按点数分类的牌
  */
 public class AnnotatedCards {
-    private final Map<Integer, List<Card>> numberMap; // 按点数分类的牌
+    // <牌面值（rank），传入的牌中与rank相等的牌的list>
+    private final Map<Integer, List<Card>> numberMap;
 
     public AnnotatedCards(List<Card> cards) {
         numberMap = new HashMap<>();
