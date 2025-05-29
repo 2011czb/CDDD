@@ -1,8 +1,8 @@
 package Players;
 
 import cards.Card;
-import java.util.Collections;
 import java.util.List;
+import Players.AI.*;
 
 /**
  * AI玩家
@@ -17,6 +17,10 @@ public class AIPlayer extends Player {
 
     public AIPlayer(String name) {
         this(name, SimpleAIStrategy.INSTANCE);
+    }
+
+    public AIStrategy getStrategy() {
+        return aiStrategy;
     }
 
     @Override

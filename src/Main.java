@@ -1,6 +1,7 @@
 import Game.Game;
 import Network.NetworkManager;
 import Players.*;
+import Players.AI.*;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;
@@ -51,21 +52,21 @@ public class Main {
         System.out.println("\n===== 单人模式 =====");
         
         // 选择游戏规则
-        System.out.println("请选择游戏规则：");
+        System.out.println("\n请选择游戏规则：");
         System.out.println("1. 北方规则");
         System.out.println("2. 南方规则");
-        
-        int ruleChoice = 1;
-        try {
-            ruleChoice = Integer.parseInt(scanner.nextLine().trim());
-            if (ruleChoice != 1 && ruleChoice != 2) {
-                System.out.println("无效选择，默认使用北方规则");
-                ruleChoice = 1;
-            }
-        } catch (Exception e) {
-            System.out.println("输入无效，默认使用北方规则");
+        int ruleChoice = scanner.nextInt();
+        while (ruleChoice != 1 && ruleChoice != 2) {
+            System.out.println("无效的选择，请重新输入：");
+            ruleChoice = scanner.nextInt();
         }
-        
+
+        // 选择AI策略
+        System.out.println("\n请选择AI策略：");
+        AIStrategyType.displayOptions();
+        int strategyChoice = scanner.nextInt();
+        AIStrategyType aiStrategyType = AIStrategyType.fromId(strategyChoice);
+
         System.out.println("请输入你的名字：");
         String playerName = scanner.nextLine().trim();
         if (playerName.isEmpty()) {
@@ -73,7 +74,7 @@ public class Main {
         }
         
         // 创建单人模式游戏
-        Game game = Game.createSinglePlayerGame(playerName, ruleChoice);
+        Game game = Game.createSinglePlayerGame(playerName, ruleChoice, aiStrategyType);
         
         // 开始游戏
         System.out.println("\n游戏开始！使用" + game.getRuleName());

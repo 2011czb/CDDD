@@ -23,11 +23,13 @@ public class GameDisplayManager {
      * 显示玩家手牌
      * @param player 要显示手牌的玩家
      */
+    //2025.5.29这里本来是if (player == currentPlayer && player instanceof HumanPlayer)
+    //为了便于调试暂时改为if (player == currentPlayer)
     public void displayPlayerHand(Player player) {
         Player currentPlayer = stateManager.getCurrentPlayer();
 
         // 只有当前回合的玩家可以看到自己的详细手牌
-        if (player == currentPlayer && player instanceof HumanPlayer) {
+        if (player == currentPlayer) {
             System.out.println(player.getName() + "的手牌：");
             List<Card> hand = player.getHand();
             for (int i = 0; i < hand.size(); i++) {

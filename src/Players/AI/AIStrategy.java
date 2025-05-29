@@ -1,6 +1,7 @@
-package Players;
+package Players.AI;
 
 import cards.Card;
+import Players.*;
 
 import java.util.List;
 

@@ -1,6 +1,7 @@
 package Game;
 
 import Players.*;
+import Players.AI.*;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;
@@ -37,13 +38,36 @@ public class Game {
     
     /**
      * 创建单人模式游戏（1个玩家对战3个AI）
+     * @param playerName 玩家名称
+     * @param ruleType 规则类型
+     * @param aiStrategyType AI策略类型
      */
-    public static Game createSinglePlayerGame(String playerName, int ruleType) {
+    public static Game createSinglePlayerGame(String playerName, int ruleType, AIStrategyType aiStrategyType) {
         List<Player> players = new ArrayList<>();
-        players.add(new HumanPlayer(playerName));  // 人类玩家
-        players.add(new AIPlayer("AI玩家1"));     // AI玩家
-        players.add(new AIPlayer("AI玩家2"));     // AI玩家
-        players.add(new AIPlayer("AI玩家3"));     // AI玩家
+        HumanPlayer humanPlayer = new HumanPlayer(playerName);  // 人类玩家
+        players.add(humanPlayer);
+
+        // 获取AI策略实例并设置规则
+        AIStrategy strategy = aiStrategyType.getStrategy();
+        Rule rule = ruleType == RULE_NORTH ? NorthRule.getInstance() : SouthRule.getInstance();
+        
+        // 根据不同的AI策略类型设置规则和玩家信息
+        if (strategy instanceof SmartAIStrategy1) {
+            ((SmartAIStrategy1) strategy).setRule(rule);
+        } 
+        else if(strategy instanceof SmartAIStrategy2){
+            ((SmartAIStrategy2)strategy).setRule(rule);
+        }
+        else if (strategy instanceof SmartAIStrategy3) {
+            SmartAIStrategy3 smartStrategy = (SmartAIStrategy3) strategy;
+            smartStrategy.setRule(rule);
+            smartStrategy.setPlayerCards(humanPlayer.getHand());  // 设置人类玩家的手牌
+        }
+
+        // 创建AI玩家
+        players.add(new AIPlayer("AI玩家1", strategy));     // AI玩家
+        players.add(new AIPlayer("AI玩家2", strategy));     // AI玩家
+        players.add(new AIPlayer("AI玩家3", strategy));     // AI玩家
 
         return new Game(players, MODE_SINGLE_PLAYER, ruleType);
     }
@@ -154,6 +178,23 @@ public class Game {
         //        displayManager.displayPossiblePatterns(players.get(i));
         //    }
         //}
+
+                // 更新AI策略中的玩家手牌信息
+                for (Player player : players) {
+                    if (player instanceof AIPlayer) {
+                        AIStrategy strategy = ((AIPlayer) player).getStrategy();
+                        if (strategy instanceof SmartAIStrategy3) {
+                            // 找到人类玩家
+                            Player humanPlayer = players.stream()
+                                .filter(p -> p instanceof HumanPlayer)
+                                .findFirst()
+                                .orElse(null);
+                            if (humanPlayer != null) {
+                                ((SmartAIStrategy3) strategy).setPlayerCards(humanPlayer.getHand());
+                            }
+                        }
+                    }
+                }
 
         // 重置游戏状态
         stateManager.reset();

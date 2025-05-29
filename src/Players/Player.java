@@ -6,7 +6,6 @@ import java.util.ArrayList; // 导入 Rank 类
 import java.util.Collections; // 导入 Suit 类
 import java.util.List; // 导入 ArrayList
 import java.util.Optional; // 导入 Collections
-import java.util.Scanner; // 导入 Comparator
 
 /**
  * 玩家（包括人类和AI）的抽象父类

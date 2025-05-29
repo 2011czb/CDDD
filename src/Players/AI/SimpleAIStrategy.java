@@ -1,7 +1,8 @@
-package Players;
+package Players.AI;
 
 import PokerPatterns.basis.*;
 import PokerPatterns.generator.CardGroup;
+import Players.*;
 import cards.Card;
 import cards.Rank;
 import java.util.ArrayList;
@@ -17,6 +18,10 @@ import java.util.stream.Collectors;
  * AI出牌策略类
  * 提供AI玩家的出牌决策逻辑
  */
+
+ /*
+  * 这个是最初实现的ai，可以删掉因为没啥用，而且也没有继承抽象父类，就只是起到了一个测试作用
+  */
 public class SimpleAIStrategy implements AIStrategy {
     public static final SimpleAIStrategy INSTANCE = new SimpleAIStrategy();
 
@@ -41,7 +46,7 @@ public class SimpleAIStrategy implements AIStrategy {
      */
     @Override
     public List<Card> makeDecision(Player player, List<Card> lastCards) {
-        // 如果是第一手牌，出包含方块三的最小牌型
+        // 如果是第一手牌，出包含方块三的最大牌型
         if (lastCards == null) {
             return playFirstHandWithDiamondThree(player);
         }
