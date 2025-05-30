@@ -104,10 +104,10 @@ public class Game {
                 throw new IllegalArgumentException("无效的规则类型：" + ruleType);
         }
         
-        // 初始化游戏管理器
         this.stateManager = new GameStateManager(players);
+        this.displayManager = new GameDisplayManager(stateManager, gameRule);
         this.playManager = new GamePlayManager(gameRule, stateManager);
-        this.displayManager = new GameDisplayManager(stateManager);
+
     }
     
     /**

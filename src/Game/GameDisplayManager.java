@@ -2,7 +2,8 @@ package Game;
 
 import Players.HumanPlayer;
 import Players.Player;
-import PokerPatterns.basis.*;
+import PokerPatterns.PlayablePatternUtil;
+import Rules.Rule;
 import PokerPatterns.generator.CardGroup;
 import cards.Card;
 
@@ -14,9 +15,11 @@ import java.util.*;
  */
 public class GameDisplayManager {
     private final GameStateManager stateManager;
+    private final Rule gameRule;
 
-    public GameDisplayManager(GameStateManager stateManager) {
+    public GameDisplayManager(GameStateManager stateManager, Rule gameRule) {
         this.stateManager = stateManager;
+        this.gameRule = gameRule;
     }
 
     /**
@@ -61,7 +64,7 @@ public class GameDisplayManager {
 
         // 如果是非AI玩家出牌，更新并显示可能的牌型
         //if (player instanceof HumanPlayer) {
-        //    updateAndDisplayPossiblePatterns();
+         // updateAndDisplayPossiblePatterns();
         //}
     }
 
@@ -86,9 +89,30 @@ public class GameDisplayManager {
     }
 
     /**
-     * 显示玩家手牌中所有可能的牌型
+     * 显示玩家可以出的牌型
      * @param player 要分析的玩家
      */
+    public void displayPossiblePatterns(Player player) {
+        List<Card> hand = player.getHand();
+        List<Card> lastCards = stateManager.getLastPlayedCards();
+        int lastPlayerIndex = stateManager.getLastPlayerIndex();
+        int currentPlayerIndex = stateManager.getCurrentPlayerIndex();
+        
+        //250530这里只显示人类玩家可出的牌型用来做提示功能，删掉if就会也显示ai可出的牌
+        if (player instanceof HumanPlayer){
+
+        // 使用PlayablePatternUtil获取可出的牌型
+        Map<String, List<CardGroup>> playablePatterns = 
+            PlayablePatternUtil.getPlayablePatterns(hand, lastCards, gameRule);
+        
+        // 打印可出的牌型
+        PlayablePatternUtil.printPlayablePatterns(playablePatterns, lastCards, lastPlayerIndex, currentPlayerIndex);
+
+        }
+    }
+
+    /*
+     *         
     public void displayPossiblePatterns(Player player) {
         System.out.println("\n" + player.getName() + "的手牌中所有可能的牌型：");
         List<Card> hand = player.getHand();
@@ -121,6 +145,8 @@ public class GameDisplayManager {
         }
         System.out.println(); // 添加一个空行
     }
+
+     */
 
     /**
      * 更新并显示当前玩家可能的牌型

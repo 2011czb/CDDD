@@ -1,13 +1,11 @@
 package PokerPatterns.basis;
 
-import PokerPatterns.generator.AnnotatedCards;
 import PokerPatterns.generator.CardGroup;
 import PokerPatterns.generator.PatternMatchUtil;
 import cards.Card;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * 四个带单张牌型实现

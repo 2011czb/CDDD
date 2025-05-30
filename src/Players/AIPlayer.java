@@ -16,7 +16,7 @@ public class AIPlayer extends Player {
     }
 
     public AIPlayer(String name) {
-        this(name, SimpleAIStrategy.INSTANCE);
+        this(name, SmartAIStrategy1.INSTANCE);//默认简单规则
     }
 
     public AIStrategy getStrategy() {
