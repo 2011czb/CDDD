@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import Players.*;
 
+
 /**
  * AI策略抽象基类
  * 根据游戏规则动态选择比较策略
@@ -28,6 +29,7 @@ public abstract class AbstractAIStrategy implements AIStrategy {
     );
 
     protected Rule currentRule;
+    private final Random random = new Random();
 
     /**
      * 设置所使用规则
@@ -126,6 +128,17 @@ public abstract class AbstractAIStrategy implements AIStrategy {
         return groups.stream()
                 .min((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()))
                 .orElse(null);
+    }
+
+    /**
+     * 随机选择一个牌型
+     * */
+    public CardGroup findRandomCardGroup(List<CardGroup> groups) {
+        if (groups.isEmpty()) {
+            return null;
+        }
+        int randomIndex = random.nextInt(groups.size());
+        return groups.get(randomIndex);
     }
 
     /**

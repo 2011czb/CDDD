@@ -188,8 +188,8 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
     /**
      * 选择首出策略
      * 当玩家手牌≤3张时出大牌压制
-     * 当玩家缺少特定牌型（如对子/三张）时优先出对应牌型
      * 当玩家没有更大的五张牌型时出五张牌型
+     * 当玩家缺少特定牌型（如对子/三张）时优先出对应牌型
      */
     private CardGroup chooseFirstPlayStrategy(List<CardGroup> availableGroups, 
                                             PlayerHandAnalysis analysis) {
@@ -207,25 +207,6 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
             return findMaxCardGroup(availableGroups);
         }
 
-        // 如果玩家没有对子，优先出对子
-        if (analysis.pairs.isEmpty()) {
-            //250529 调试信息：玩家没有对子，AI优先出对子
-            System.out.println("//250529 调试信息：玩家没有对子，AI优先出对子");
-            List<CardGroup> pairs = availableGroups.stream()
-                .filter(group -> group.getCards().size() == 2)
-                .collect(Collectors.toList());
-            return pairs.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(pairs);
-        }
-
-        // 如果玩家没有三张，优先出三张
-        if (analysis.triples.isEmpty()) {
-            //250529 调试信息：玩家没有三张，AI优先出三张
-            System.out.println("//250529 调试信息：玩家没有三张，AI优先出三张");
-            List<CardGroup> triples = availableGroups.stream()
-                .filter(group -> group.getCards().size() == 3)
-                .collect(Collectors.toList());
-            return triples.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(triples);
-        }
 
         // 如果玩家没有比我更大的五张牌型，优先出五张牌型
         if (!analysis.fiveCardPatterns.isEmpty()) {
@@ -249,100 +230,80 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
                     System.out.println("//250529 调试信息：玩家有比AI更大的五张牌型，AI不出五张牌型");
                 }
             }
+
+            // 如果玩家没有三张，优先出三张
+            if (analysis.triples.isEmpty()) {
+                //250529 调试信息：玩家没有三张，AI优先出三张
+                System.out.println("//250529 调试信息：玩家没有三张，AI优先出三张");
+                List<CardGroup> triples = availableGroups.stream()
+                        .filter(group -> group.getCards().size() == 3)
+                        .collect(Collectors.toList());
+                return triples.isEmpty() ? findMinCardGroup(availableGroups) : findMinCardGroup(triples);
+            }
+
+            // 如果玩家没有对子，优先出对子
+            if (analysis.pairs.isEmpty()) {
+                //250529 调试信息：玩家没有对子，AI优先出对子
+                System.out.println("//250529 调试信息：玩家没有对子，AI优先出对子");
+                List<CardGroup> pairs = availableGroups.stream()
+                        .filter(group -> group.getCards().size() == 2)
+                        .collect(Collectors.toList());
+                return pairs.isEmpty() ? findMinCardGroup(availableGroups) : findMinCardGroup(pairs);
+            }
         }
 
-        //250529 调试信息：使用默认策略，选择最大的牌组
-        System.out.println("//250529 调试信息：使用默认策略，选择最大的牌组");
-        return findMaxCardGroup(availableGroups);
+        //250529 调试信息：使用默认策略，选择最小的牌组
+        System.out.println("//250529 调试信息：使用默认策略，选择最小的牌组");
+        return findMinCardGroup(availableGroups);
+    }
+
+    /**
+     * 判断玩家是否能压制指定牌组
+     * 在南方规则下只检查相同牌型
+     * 在北方规则下检查所有牌型
+     */
+    private boolean playerCanBeat(PlayerHandAnalysis analysis, List<Card> cards) {
+        for (CardGroup group : analysis.playerPatterns) {
+            if (currentRule.compareCards(group.getCards(), cards) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * 选择跟牌策略
-     * 当玩家没有更大的同类型牌时用最小牌抢牌权
-     * 当玩家有更大同类型牌时出最大牌消耗对手
-     * 保留玩家缺少的牌型（对子/三张/五张）
+     *  1. 按牌组大小升序排序
+     *  2. 优先选择玩家无法压制的最小牌组
+     *  3. 若所有牌组都可被压制，则出最大牌组消耗对手
      */
     private CardGroup chooseFollowPlayStrategy(List<CardGroup> availableGroups,
                                              PlayerHandAnalysis analysis,
                                              List<Card> lastCards) {
-        int lastCardsSize = lastCards.size();
+        // 按牌组大小升序排序（从小到大）
+        List<CardGroup> sortedGroups = availableGroups.stream()
+                .sorted((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()))
+                .collect(Collectors.toList());
 
-        // 找出所有与上一手牌相同数量且大于上一手牌的所有牌组
-        List<CardGroup> samePatternGroups = availableGroups.stream()
-            .filter(group -> group.getCards().size() == lastCardsSize)
-            .collect(Collectors.toList());
-
-        // 手中有与上一手牌相同数量且大于上一手牌的牌组
-        if (!samePatternGroups.isEmpty()) {
-            // 分析玩家是否有更大的同类型牌
-            boolean playerHasLarger = analysis.playerPatterns.stream()
-                .filter(group -> group.getCards().size() == lastCardsSize)
-                .anyMatch(group -> currentRule.compareCards(group.getCards(), lastCards) > 0);
-
-            if (!playerHasLarger) {
-                //250529 调试信息：玩家没有更大的同类型牌，AI用最小的牌抢牌权
-                System.out.println("//250529 调试信息：玩家没有更大的同类型牌，AI用最小的牌抢牌权");
-                return findMinCardGroup(samePatternGroups);
-            } else {
-                //250529 调试信息：玩家有更大的同类型牌，AI出最大的牌
-                System.out.println("//250529 调试信息：玩家有更大的同类型牌，AI出最大的牌");
-                return findMaxCardGroup(samePatternGroups);
+        // 寻找最小的玩家无法压制的牌组
+        for (CardGroup group : sortedGroups) {
+            if (!playerCanBeat(analysis, group.getCards())) {
+                System.out.println("//250529 调试信息：选择玩家无法压制的牌组：" +
+                        group.getCards().stream()
+                                .map(Card::getDisplayName)
+                                .collect(Collectors.joining(" ")));
+                return group;
             }
         }
 
-        // 如果上一手是五张牌型，分析玩家是否有更大的五张牌型
-        if (lastCardsSize == 5) {
-            List<CardGroup> fiveCardGroups = availableGroups.stream()
-                .filter(group -> group.getCards().size() == 5)
-                .collect(Collectors.toList());
-
-            if (!fiveCardGroups.isEmpty()) {
-                boolean playerHasLargerFive = analysis.fiveCardPatterns.stream()
-                    .anyMatch(group -> currentRule.compareCards(group.getCards(), lastCards) > 0);
-
-                if (!playerHasLargerFive) {
-                    //250529 调试信息：玩家没有更大的五张牌型，AI用最小的五张牌抢牌权
-                    System.out.println("//250529 调试信息：玩家没有更大的五张牌型，AI用最小的五张牌抢牌权");
-                    return findMinCardGroup(fiveCardGroups);
-                } else {
-                    //250529 调试信息：玩家有更大的五张牌型，AI不出五张牌型
-                    System.out.println("//250529 调试信息：玩家有更大的五张牌型，AI不出五张牌型");
-                }
-            }
-        }
-
-        // 如果玩家没有某种牌型，保留这种牌型（在北方规则下更有意义，因为不同牌型有大小关系）
-        if (lastCardsSize == 2 && analysis.pairs.isEmpty()) {
-            //250529 调试信息：玩家没有对子，AI保留对子
-            System.out.println("//250529 调试信息：玩家没有对子，AI保留对子");
-            List<CardGroup> pairs = availableGroups.stream()
-                .filter(group -> group.getCards().size() == 2)
-                .collect(Collectors.toList());
-            return pairs.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(pairs);
-        }
-        if (lastCardsSize == 3 && analysis.triples.isEmpty()) {
-            //250529 调试信息：玩家没有三张，AI保留三张
-            System.out.println("//250529 调试信息：玩家没有三张，AI保留三张");
-            List<CardGroup> triples = availableGroups.stream()
-                .filter(group -> group.getCards().size() == 3)
-                .collect(Collectors.toList());
-            return triples.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(triples);
-        }
-        if (lastCardsSize == 5 && analysis.fiveCardPatterns.isEmpty()) {
-            //250529 调试信息：玩家没有五张牌型，AI保留五张牌型
-            System.out.println("//250529 调试信息：玩家没有五张牌型，AI保留五张牌型");
-            List<CardGroup> fiveCardGroups = availableGroups.stream()
-                .filter(group -> group.getCards().size() == 5)
-                .collect(Collectors.toList());
-            return fiveCardGroups.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(fiveCardGroups);
-        }
-
-        //250529 调试信息：使用默认策略，选择最大的牌组
-        System.out.println("//250529 调试信息：使用默认策略，选择最大的牌组");
-        return findMaxCardGroup(availableGroups);
+        // 玩家能压制所有牌组时，出最大牌组消耗对手
+        CardGroup maxGroup = findMaxCardGroup(sortedGroups);
+        System.out.println("//250529 调试信息：玩家能压制所有牌组，选择最大牌组消耗对手：" +
+                (maxGroup != null ? maxGroup.getCards().stream()
+                        .map(Card::getDisplayName)
+                        .collect(Collectors.joining(" ")) : "无"));
+        return maxGroup;
     }
-
-
 
     /**
      * 玩家手牌分析结果

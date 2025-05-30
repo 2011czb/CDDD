@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
  */
 public class SmartAIStrategy2 extends AbstractAIStrategy {
     public static final SmartAIStrategy2 INSTANCE = new SmartAIStrategy2();
-    private final Random random = new Random();
 
     private SmartAIStrategy2() {}
 
@@ -27,7 +26,7 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
         }
 
         // 找出最大的牌型组合
-        CardGroup randomGroup = randomCardGroup(allPatterns);
+        CardGroup randomGroup = findRandomCardGroup(allPatterns);
         if (randomGroup == null) {
             return Collections.emptyList();
         }
@@ -52,7 +51,7 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
         }
 
         // 随机选择一个比上一手大的组合
-        CardGroup randomLargerGroup = randomCardGroup(largerGroups);
+        CardGroup randomLargerGroup = findRandomCardGroup(largerGroups);
         if (randomLargerGroup == null) {
             return Collections.emptyList();
         }
@@ -87,7 +86,7 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
         }
 
         // 随机选择一个包含方块三的组合
-        CardGroup randomGroup = randomCardGroup(groupsWithDiamondThree);
+        CardGroup randomGroup = findRandomCardGroup(groupsWithDiamondThree);
         if (randomGroup == null) {
             return Collections.emptyList();
         }
@@ -98,16 +97,6 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
     }
 
 
-    /**
-     * 随机选择一个牌型
-     * */
-    public CardGroup randomCardGroup(List<CardGroup> groups) {
-        if (groups.isEmpty()) {
-            return null;
-        }
-        int randomIndex = random.nextInt(groups.size());
-        return groups.get(randomIndex);
-    }
 
 
 } 
