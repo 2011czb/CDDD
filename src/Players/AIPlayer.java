@@ -2,7 +2,7 @@ package Players;
 
 import cards.Card;
 import java.util.List;
-import Players.AI.*;
+import AI.*;
 
 /**
  * AI玩家

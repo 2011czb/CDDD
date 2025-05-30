@@ -1,4 +1,4 @@
-package Players.AI;
+package AI;
 
 /**
  * AI策略类型枚举

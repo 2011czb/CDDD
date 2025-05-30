@@ -1,8 +1,9 @@
-package Players.AI;
+package AI;
 
 import PokerPatterns.basis.*;
 import PokerPatterns.generator.CardGroup;
 import Players.*;
+import Rules.Rule;
 import cards.Card;
 import cards.Rank;
 import java.util.ArrayList;
@@ -36,6 +37,16 @@ public class SimpleAIStrategy implements AIStrategy {
         FourofaKind.getInstance(),   // 四带一
         StraightFlush.getInstance()  // 同花顺
     );
+
+    protected Rule currentRule;
+
+    /**
+     * 设置所使用规则
+     * */
+    @Override
+    public void setRule(Rule rule) {
+        this.currentRule = rule;
+    }
 
     /**
      * AI做出出牌决策

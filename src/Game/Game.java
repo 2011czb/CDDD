@@ -1,7 +1,7 @@
 package Game;
 
 import Players.*;
-import Players.AI.*;
+import AI.*;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;
@@ -50,18 +50,12 @@ public class Game {
         // 获取AI策略实例并设置规则
         AIStrategy strategy = aiStrategyType.getStrategy();
         Rule rule = ruleType == RULE_NORTH ? NorthRule.getInstance() : SouthRule.getInstance();
-        
-        // 根据不同的AI策略类型设置规则和玩家信息
-        if (strategy instanceof SmartAIStrategy1) {
-            ((SmartAIStrategy1) strategy).setRule(rule);
-        } 
-        else if(strategy instanceof SmartAIStrategy2){
-            ((SmartAIStrategy2)strategy).setRule(rule);
-        }
-        else if (strategy instanceof SmartAIStrategy3) {
+        strategy.setRule(rule);
+
+        // 如果是高级AI策略，传入玩家信息
+        if (strategy instanceof SmartAIStrategy3) {
             SmartAIStrategy3 smartStrategy = (SmartAIStrategy3) strategy;
-            smartStrategy.setRule(rule);
-            smartStrategy.setPlayerCards(humanPlayer.getHand());  // 设置人类玩家的手牌
+            smartStrategy.setPlayer(humanPlayer);  // 设置人类玩家
         }
 
         // 创建AI玩家
@@ -179,22 +173,22 @@ public class Game {
         //    }
         //}
 
-                // 更新AI策略中的玩家手牌信息
-                for (Player player : players) {
-                    if (player instanceof AIPlayer) {
-                        AIStrategy strategy = ((AIPlayer) player).getStrategy();
-                        if (strategy instanceof SmartAIStrategy3) {
-                            // 找到人类玩家
-                            Player humanPlayer = players.stream()
-                                .filter(p -> p instanceof HumanPlayer)
-                                .findFirst()
-                                .orElse(null);
-                            if (humanPlayer != null) {
-                                ((SmartAIStrategy3) strategy).setPlayerCards(humanPlayer.getHand());
-                            }
-                        }
+        // 更新AI策略中的玩家手牌信息
+        for (Player player : players) {
+            if (player instanceof AIPlayer) {
+                AIStrategy strategy = ((AIPlayer) player).getStrategy();
+                if (strategy instanceof SmartAIStrategy3) {
+                    // 找到人类玩家
+                    Player humanPlayer = players.stream()
+                            .filter(p -> p instanceof HumanPlayer)
+                            .findFirst()
+                            .orElse(null);
+                    if (humanPlayer != null) {
+                        ((SmartAIStrategy3) strategy).setPlayer((HumanPlayer)humanPlayer);
                     }
                 }
+            }
+        }
 
         // 重置游戏状态
         stateManager.reset();

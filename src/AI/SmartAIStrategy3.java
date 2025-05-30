@@ -1,4 +1,4 @@
-package Players.AI;
+package AI;
 
 import PokerPatterns.generator.CardGroup;
 import Players.*;
@@ -19,27 +19,22 @@ import java.util.stream.Collectors;
  */
 public class SmartAIStrategy3 extends AbstractAIStrategy {
     public static final SmartAIStrategy3 INSTANCE = new SmartAIStrategy3();
-    private Rule currentRule;
-    private List<Card> playerCards; // 玩家的手牌
+    private HumanPlayer humanPlayer; // 玩家
 
     private SmartAIStrategy3() {}
 
     /**
-     * 设置当前使用的规则和玩家手牌
+     * 设置玩家手牌
      */
-    public void setRule(Rule rule) {
-        this.currentRule = rule;
-    }
-
-    public void setPlayerCards(List<Card> cards) {
-        this.playerCards = new ArrayList<>(cards);
+    public void setPlayer(HumanPlayer player) {
+        this.humanPlayer = player;
     }
 
     @Override
     public List<Card> playPossiblePattern(Player player) {
         //250529 调试信息：AI需要出牌（上一手是自己出的）
         System.out.println("//250529 调试信息：AI需要出牌（上一手是自己出的）");
-        
+
         List<CardGroup> allPatterns = getAllPossiblePatterns(player);
         if (allPatterns.isEmpty()) {
             return Collections.emptyList();
@@ -131,30 +126,26 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
         return playCardsAndDisplay(player, indices);
     }
 
-    @Override
-    public boolean isLargerThanLastPlay(List<Card> cards, List<Card> lastCards) {
-        return currentRule.compareCards(cards, lastCards) > 0;
-    }
 
     /**
      * 分析玩家手牌
      */
     private PlayerHandAnalysis analyzePlayerHand() {
-        if (playerCards == null || playerCards.isEmpty()) {
+        if (humanPlayer.getHand() == null || humanPlayer.getHand().isEmpty()) {
             return new PlayerHandAnalysis();
         }
 
         PlayerHandAnalysis analysis = new PlayerHandAnalysis();
-        analysis.playerCardCount = playerCards.size();
+        analysis.playerCardCount = humanPlayer.getHand().size();
         
         // 分析每种牌型
         analysis.playerPatterns = new ArrayList<>();
         for (PokerPattern pattern : PATTERNS) {
-            analysis.playerPatterns.addAll(pattern.potentialCardGroup(playerCards));
+            analysis.playerPatterns.addAll(pattern.potentialCardGroup(humanPlayer.getHand()));
         }
         
         // 分析玩家手牌中的各种牌型
-        analysis.hasBigCards = playerCards.stream()
+        analysis.hasBigCards = humanPlayer.getHand().stream()
             .anyMatch(card -> card.getRank() == Rank.ACE || card.getRank() == Rank.TWO);
         
         // 分析玩家手牌中的对子
@@ -196,6 +187,9 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
 
     /**
      * 选择首出策略
+     * 当玩家手牌≤3张时出大牌压制
+     * 当玩家缺少特定牌型（如对子/三张）时优先出对应牌型
+     * 当玩家没有更大的五张牌型时出五张牌型
      */
     private CardGroup chooseFirstPlayStrategy(List<CardGroup> availableGroups, 
                                             PlayerHandAnalysis analysis) {
@@ -203,14 +197,14 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
         if (analysis.playerCardCount <= 3) {
             //250529 调试信息：玩家手牌数量较少，优先出大牌
             System.out.println("//250529 调试信息：玩家手牌数量较少（" + analysis.playerCardCount + "张），优先出大牌");
-            return findCardGroup(availableGroups);
+            return findMaxCardGroup(availableGroups);
         }
 
         // 如果玩家没有大牌，AI可以用大牌抢到牌权
         if (!analysis.hasBigCards) {
             //250529 调试信息：玩家没有大牌，AI出大牌抢牌权
             System.out.println("//250529 调试信息：玩家没有大牌（A或2），AI出大牌抢牌权");
-            return findCardGroup(availableGroups);
+            return findMaxCardGroup(availableGroups);
         }
 
         // 如果玩家没有对子，优先出对子
@@ -220,7 +214,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
             List<CardGroup> pairs = availableGroups.stream()
                 .filter(group -> group.getCards().size() == 2)
                 .collect(Collectors.toList());
-            return pairs.isEmpty() ? findCardGroup(availableGroups) : findminCardGroup(pairs);
+            return pairs.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(pairs);
         }
 
         // 如果玩家没有三张，优先出三张
@@ -230,7 +224,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
             List<CardGroup> triples = availableGroups.stream()
                 .filter(group -> group.getCards().size() == 3)
                 .collect(Collectors.toList());
-            return triples.isEmpty() ? findCardGroup(availableGroups) : findminCardGroup(triples);
+            return triples.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(triples);
         }
 
         // 如果玩家没有比我更大的五张牌型，优先出五张牌型
@@ -241,7 +235,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
                 .collect(Collectors.toList());
             
             if (!fiveCardGroups.isEmpty()) {
-                CardGroup aiLargestFive = findCardGroup(fiveCardGroups);
+                CardGroup aiLargestFive = findMaxCardGroup(fiveCardGroups);
                 // 检查玩家是否有更大的五张牌型
                 boolean playerHasLargerFive = analysis.fiveCardPatterns.stream()
                     .anyMatch(group -> currentRule.compareCards(group.getCards(), aiLargestFive.getCards()) > 0);
@@ -249,7 +243,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
                 if (!playerHasLargerFive) {
                     //250529 调试信息：玩家没有比AI更大的五张牌型，AI出五张牌型
                     System.out.println("//250529 调试信息：玩家没有比AI更大的五张牌型，AI出五张牌型");
-                    return findminCardGroup(fiveCardGroups);
+                    return findMinCardGroup(fiveCardGroups);
                 } else {
                     //250529 调试信息：玩家有比AI更大的五张牌型，AI不出五张牌型
                     System.out.println("//250529 调试信息：玩家有比AI更大的五张牌型，AI不出五张牌型");
@@ -259,22 +253,26 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
 
         //250529 调试信息：使用默认策略，选择最大的牌组
         System.out.println("//250529 调试信息：使用默认策略，选择最大的牌组");
-        return findCardGroup(availableGroups);
+        return findMaxCardGroup(availableGroups);
     }
 
     /**
      * 选择跟牌策略
+     * 当玩家没有更大的同类型牌时用最小牌抢牌权
+     * 当玩家有更大同类型牌时出最大牌消耗对手
+     * 保留玩家缺少的牌型（对子/三张/五张）
      */
     private CardGroup chooseFollowPlayStrategy(List<CardGroup> availableGroups,
                                              PlayerHandAnalysis analysis,
                                              List<Card> lastCards) {
         int lastCardsSize = lastCards.size();
-        
-        // 找出所有与上一手牌相同牌型的组合
+
+        // 找出所有与上一手牌相同数量且大于上一手牌的所有牌组
         List<CardGroup> samePatternGroups = availableGroups.stream()
             .filter(group -> group.getCards().size() == lastCardsSize)
             .collect(Collectors.toList());
 
+        // 手中有与上一手牌相同数量且大于上一手牌的牌组
         if (!samePatternGroups.isEmpty()) {
             // 分析玩家是否有更大的同类型牌
             boolean playerHasLarger = analysis.playerPatterns.stream()
@@ -284,11 +282,11 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
             if (!playerHasLarger) {
                 //250529 调试信息：玩家没有更大的同类型牌，AI用最小的牌抢牌权
                 System.out.println("//250529 调试信息：玩家没有更大的同类型牌，AI用最小的牌抢牌权");
-                return findminCardGroup(samePatternGroups);
+                return findMinCardGroup(samePatternGroups);
             } else {
                 //250529 调试信息：玩家有更大的同类型牌，AI出最大的牌
                 System.out.println("//250529 调试信息：玩家有更大的同类型牌，AI出最大的牌");
-                return findCardGroup(samePatternGroups);
+                return findMaxCardGroup(samePatternGroups);
             }
         }
 
@@ -297,7 +295,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
             List<CardGroup> fiveCardGroups = availableGroups.stream()
                 .filter(group -> group.getCards().size() == 5)
                 .collect(Collectors.toList());
-            
+
             if (!fiveCardGroups.isEmpty()) {
                 boolean playerHasLargerFive = analysis.fiveCardPatterns.stream()
                     .anyMatch(group -> currentRule.compareCards(group.getCards(), lastCards) > 0);
@@ -305,7 +303,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
                 if (!playerHasLargerFive) {
                     //250529 调试信息：玩家没有更大的五张牌型，AI用最小的五张牌抢牌权
                     System.out.println("//250529 调试信息：玩家没有更大的五张牌型，AI用最小的五张牌抢牌权");
-                    return findminCardGroup(fiveCardGroups);
+                    return findMinCardGroup(fiveCardGroups);
                 } else {
                     //250529 调试信息：玩家有更大的五张牌型，AI不出五张牌型
                     System.out.println("//250529 调试信息：玩家有更大的五张牌型，AI不出五张牌型");
@@ -320,7 +318,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
             List<CardGroup> pairs = availableGroups.stream()
                 .filter(group -> group.getCards().size() == 2)
                 .collect(Collectors.toList());
-            return pairs.isEmpty() ? findCardGroup(availableGroups) : findminCardGroup(pairs);
+            return pairs.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(pairs);
         }
         if (lastCardsSize == 3 && analysis.triples.isEmpty()) {
             //250529 调试信息：玩家没有三张，AI保留三张
@@ -328,7 +326,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
             List<CardGroup> triples = availableGroups.stream()
                 .filter(group -> group.getCards().size() == 3)
                 .collect(Collectors.toList());
-            return triples.isEmpty() ? findCardGroup(availableGroups) : findminCardGroup(triples);
+            return triples.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(triples);
         }
         if (lastCardsSize == 5 && analysis.fiveCardPatterns.isEmpty()) {
             //250529 调试信息：玩家没有五张牌型，AI保留五张牌型
@@ -336,32 +334,15 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
             List<CardGroup> fiveCardGroups = availableGroups.stream()
                 .filter(group -> group.getCards().size() == 5)
                 .collect(Collectors.toList());
-            return fiveCardGroups.isEmpty() ? findCardGroup(availableGroups) : findminCardGroup(fiveCardGroups);
+            return fiveCardGroups.isEmpty() ? findMaxCardGroup(availableGroups) : findMinCardGroup(fiveCardGroups);
         }
 
         //250529 调试信息：使用默认策略，选择最大的牌组
         System.out.println("//250529 调试信息：使用默认策略，选择最大的牌组");
-        return findCardGroup(availableGroups);
+        return findMaxCardGroup(availableGroups);
     }
 
-    @Override
-    public CardGroup findCardGroup(List<CardGroup> groups) {
-        if (groups.isEmpty()) {
-            return null;
-        }
-        return groups.stream()
-            .max((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()))
-            .orElse(null);
-    }
 
-    public CardGroup findminCardGroup(List<CardGroup> groups) {
-        if (groups.isEmpty()) {
-            return null;
-        }
-        return groups.stream()
-            .min((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()))
-            .orElse(null);
-    }
 
     /**
      * 玩家手牌分析结果

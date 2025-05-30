@@ -1,4 +1,4 @@
-package Players.AI;
+package AI;
 
 import PokerPatterns.generator.CardGroup;
 import Players.*;
@@ -10,24 +10,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 智能策略
- * 根据游戏规则动态选择比较策略
- * 南方规则：只有相同牌型才能比较大小
- * 北方规则：不同牌型也可以比较大小，按照牌型权重比较
+ * 中等智能策略：出符合规则的随机牌型
  */
-//出符合规则的最大牌
 public class SmartAIStrategy2 extends AbstractAIStrategy {
     public static final SmartAIStrategy2 INSTANCE = new SmartAIStrategy2();
-    private Rule currentRule; // 当前使用的规则
+    private final Random random = new Random();
 
     private SmartAIStrategy2() {}
-
-    /**
-     * 设置当前使用的规则
-     */
-    public void setRule(Rule rule) {
-        this.currentRule = rule;
-    }
 
     @Override
     public List<Card> playPossiblePattern(Player player) {
@@ -38,13 +27,13 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
         }
 
         // 找出最大的牌型组合
-        CardGroup biggestGroup = findCardGroup(allPatterns);
-        if (biggestGroup == null) {
+        CardGroup randomGroup = randomCardGroup(allPatterns);
+        if (randomGroup == null) {
             return Collections.emptyList();
         }
 
-        // 获取牌的索引并出牌
-        List<Integer> indices = getIndicesByCards(player.getHand(), biggestGroup.getCards());
+        // 随机选择一个牌型组合
+        List<Integer> indices = getIndicesByCards(player.getHand(), randomGroup.getCards());
         return playCardsAndDisplay(player, indices);
     }
 
@@ -62,14 +51,14 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
             return Collections.emptyList();
         }
 
-        // 找出最大的组合
-        CardGroup biggestLargerGroup = findCardGroup(largerGroups);
-        if (biggestLargerGroup == null) {
+        // 随机选择一个比上一手大的组合
+        CardGroup randomLargerGroup = randomCardGroup(largerGroups);
+        if (randomLargerGroup == null) {
             return Collections.emptyList();
         }
 
         // 获取牌的索引并出牌
-        List<Integer> indices = getIndicesByCards(player.getHand(), biggestLargerGroup.getCards());
+        List<Integer> indices = getIndicesByCards(player.getHand(), randomLargerGroup.getCards());
         return playCardsAndDisplay(player, indices);
     }
 
@@ -97,32 +86,28 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
             return Collections.emptyList();
         }
 
-        // 找出最小的包含方块三的组合
-        CardGroup biggestGroup = findCardGroup(groupsWithDiamondThree);
-        if (biggestGroup == null) {
+        // 随机选择一个包含方块三的组合
+        CardGroup randomGroup = randomCardGroup(groupsWithDiamondThree);
+        if (randomGroup == null) {
             return Collections.emptyList();
         }
 
         // 获取牌的索引并出牌
-        List<Integer> indices = getIndicesByCards(player.getHand(), biggestGroup.getCards());
+        List<Integer> indices = getIndicesByCards(player.getHand(), randomGroup.getCards());
         return playCardsAndDisplay(player, indices);
     }
 
-    @Override
-    public boolean isLargerThanLastPlay(List<Card> cards, List<Card> lastCards) {
-        // 使用当前规则的compareCards方法比较牌型大小
-        return currentRule.compareCards(cards, lastCards) > 0;
-    }
 
-    @Override
-    public CardGroup findCardGroup(List<CardGroup> groups) {
+    /**
+     * 随机选择一个牌型
+     * */
+    public CardGroup randomCardGroup(List<CardGroup> groups) {
         if (groups.isEmpty()) {
             return null;
         }
-
-        // 使用max找出最大的牌组
-        return groups.stream()
-            .max((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()))
-            .orElse(null);
+        int randomIndex = random.nextInt(groups.size());
+        return groups.get(randomIndex);
     }
+
+
 } 

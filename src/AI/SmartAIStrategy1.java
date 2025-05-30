@@ -1,4 +1,4 @@
-package Players.AI;
+package AI;
 
 import PokerPatterns.generator.CardGroup;
 import Players.*;
@@ -10,24 +10,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 智能策略
- * 根据游戏规则动态选择比较策略
- * 南方规则：只有相同牌型才能比较大小
- * 北方规则：不同牌型也可以比较大小，按照牌型权重比较
+ * 简单智能策略：出符合规则的最小牌
  */
-//出符合规则的最小牌
 public class SmartAIStrategy1 extends AbstractAIStrategy {
     public static final SmartAIStrategy1 INSTANCE = new SmartAIStrategy1();
-    private Rule currentRule; // 当前使用的规则
 
     private SmartAIStrategy1() {}
-
-    /**
-     * 设置当前使用的规则
-     */
-    public void setRule(Rule rule) {
-        this.currentRule = rule;
-    }
 
     @Override
     public List<Card> playPossiblePattern(Player player) {
@@ -38,7 +26,7 @@ public class SmartAIStrategy1 extends AbstractAIStrategy {
         }
 
         // 找出最小的牌型组合
-        CardGroup smallestGroup = findCardGroup(allPatterns);
+        CardGroup smallestGroup = findMinCardGroup(allPatterns);
         if (smallestGroup == null) {
             return Collections.emptyList();
         }
@@ -63,7 +51,7 @@ public class SmartAIStrategy1 extends AbstractAIStrategy {
         }
 
         // 找出最小的组合
-        CardGroup smallestLargerGroup = findCardGroup(largerGroups);
+        CardGroup smallestLargerGroup = findMinCardGroup(largerGroups);
         if (smallestLargerGroup == null) {
             return Collections.emptyList();
         }
@@ -98,7 +86,7 @@ public class SmartAIStrategy1 extends AbstractAIStrategy {
         }
 
         // 找出最小的包含方块三的组合
-        CardGroup smallestGroup = findCardGroup(groupsWithDiamondThree);
+        CardGroup smallestGroup = findMinCardGroup(groupsWithDiamondThree);
         if (smallestGroup == null) {
             return Collections.emptyList();
         }
@@ -108,22 +96,5 @@ public class SmartAIStrategy1 extends AbstractAIStrategy {
         return playCardsAndDisplay(player, indices);
     }
 
-    @Override
-    public boolean isLargerThanLastPlay(List<Card> cards, List<Card> lastCards) {
-        // 使用当前规则的compareCards方法比较牌型大小
-        return currentRule.compareCards(cards, lastCards) > 0;
-    }
 
-    @Override
-    public CardGroup findCardGroup(List<CardGroup> groups) {
-        if (groups.isEmpty()) {
-            return null;
-        }
-
-        // 直接使用当前规则的compareCards方法比较牌型大小
-        //使用min找出最小牌
-        return groups.stream()
-            .min((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()))
-            .orElse(null);
-    }
 } 

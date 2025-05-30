@@ -1,7 +1,8 @@
-package Players.AI;
+package AI;
 
 import PokerPatterns.basis.*;
 import PokerPatterns.generator.CardGroup;
+import Rules.Rule;
 import cards.Card;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,6 +10,9 @@ import Players.*;
 
 /**
  * AI策略抽象基类
+ * 根据游戏规则动态选择比较策略
+ * 南方规则：只有相同牌型才能比较大小
+ * 北方规则：不同牌型也可以比较大小，按照牌型权重比较
  * 实现共同的策略逻辑，将牌型比较和选择的具体实现留给子类
  */
 public abstract class AbstractAIStrategy implements AIStrategy {
@@ -22,6 +26,16 @@ public abstract class AbstractAIStrategy implements AIStrategy {
         FourofaKind.getInstance(),   // 四带一
         StraightFlush.getInstance()  // 同花顺
     );
+
+    protected Rule currentRule;
+
+    /**
+     * 设置所使用规则
+     * */
+    @Override
+    public void setRule(Rule rule) {
+        this.currentRule = rule;
+    }
 
     @Override
     public List<Card> makeDecision(Player player, List<Card> lastCards) {
@@ -85,16 +99,34 @@ public abstract class AbstractAIStrategy implements AIStrategy {
     }
 
     /**
-     * 判断一组牌是否比上一手牌大
-     * 具体实现由子类决定，因为不同规则下牌型比较方式不同
+     * 根据规则判断一组牌是否比上一手牌大
      */
-    public abstract boolean isLargerThanLastPlay(List<Card> cards, List<Card> lastCards);
+    public boolean isLargerThanLastPlay(List<Card> cards, List<Card> lastCards){
+        // 使用当前规则的compareCards方法比较牌型大小
+        return currentRule.compareCards(cards, lastCards) > 0;
+    }
 
     /**
      * 在一组牌型组合中找出最小/大的组合
-     * 具体实现由子类决定，因为不同规则下牌型大小比较方式不同
+     * 辅助函数
      */
-    public abstract CardGroup findCardGroup(List<CardGroup> groups);
+    public CardGroup findMaxCardGroup(List<CardGroup> groups) {
+        if (groups.isEmpty()) {
+            return null;
+        }
+        return groups.stream()
+                .max((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()))
+                .orElse(null);
+    }
+
+    public CardGroup findMinCardGroup(List<CardGroup> groups) {
+        if (groups.isEmpty()) {
+            return null;
+        }
+        return groups.stream()
+                .min((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()))
+                .orElse(null);
+    }
 
     /**
      * 获取所有可能的牌型组合

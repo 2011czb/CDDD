@@ -1,7 +1,7 @@
 import Game.Game;
 import Network.NetworkManager;
 import Players.*;
-import Players.AI.*;
+import AI.*;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;
@@ -66,6 +66,9 @@ public class Main {
         AIStrategyType.displayOptions();
         int strategyChoice = scanner.nextInt();
         AIStrategyType aiStrategyType = AIStrategyType.fromId(strategyChoice);
+
+        // 清除输入缓冲区中的换行符
+        scanner.nextLine();
 
         System.out.println("请输入你的名字：");
         String playerName = scanner.nextLine().trim();
