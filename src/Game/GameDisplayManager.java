@@ -62,10 +62,6 @@ public class GameDisplayManager {
         }
         System.out.println();
 
-        // 如果是非AI玩家出牌，更新并显示可能的牌型
-        //if (player instanceof HumanPlayer) {
-         // updateAndDisplayPossiblePatterns();
-        //}
     }
 
     /**
@@ -98,7 +94,7 @@ public class GameDisplayManager {
         int lastPlayerIndex = stateManager.getLastPlayerIndex();
         int currentPlayerIndex = stateManager.getCurrentPlayerIndex();
         
-        //250530这里只显示人类玩家可出的牌型用来做提示功能，删掉if就会也显示ai可出的牌
+        //TODO:250530这里只显示人类玩家可出的牌型用来做提示功能，删掉if就会也显示ai可出的牌
         if (player instanceof HumanPlayer){
 
         // 使用PlayablePatternUtil获取可出的牌型
@@ -148,14 +144,4 @@ public class GameDisplayManager {
 
      */
 
-    /**
-     * 更新并显示当前玩家可能的牌型
-     * 在玩家出牌后调用此方法
-     */
-    public void updateAndDisplayPossiblePatterns() {
-        Player currentPlayer = stateManager.getCurrentPlayer();
-        if (currentPlayer instanceof HumanPlayer) {
-            displayPossiblePatterns(currentPlayer);
-        }
-    }
 } 

@@ -10,6 +10,8 @@ import java.util.List;
 import Rules.Rule;
 import Rules.NorthRule;
 import Rules.SouthRule;
+import scoring.GameSettlementManager;
+import java.util.Map;
 
 /*game：游戏初始化，主循环，管理基本游戏状态
  * GameStateManager：管理游戏状态，包括当前玩家、游戏是否结束、获胜者等
@@ -35,6 +37,7 @@ public class Game {
     private final GameStateManager stateManager;
     private final GamePlayManager playManager;
     private final GameDisplayManager displayManager;
+    private GameSettlementManager settlementManager;  // 添加结算管理器
     
     /**
      * 创建单人模式游戏（1个玩家对战3个AI）
@@ -47,6 +50,7 @@ public class Game {
         HumanPlayer humanPlayer = new HumanPlayer(playerName);  // 人类玩家
         players.add(humanPlayer);
 
+        //TODO:250531这里需要修改为动态调整，而不是开头就设置好
         // 获取AI策略实例并设置规则
         AIStrategy strategy = aiStrategyType.getStrategy();
         Rule rule = ruleType == RULE_NORTH ? NorthRule.getInstance() : SouthRule.getInstance();
@@ -107,6 +111,7 @@ public class Game {
         this.stateManager = new GameStateManager(players);
         this.displayManager = new GameDisplayManager(stateManager, gameRule);
         this.playManager = new GamePlayManager(gameRule, stateManager);
+        this.settlementManager = new GameSettlementManager();  // 初始化结算管理器
 
     }
     
@@ -203,7 +208,6 @@ public class Game {
      * 开始游戏
      */
     public void startGame() {
-        initGame();
         gameLoop();
     }
     
@@ -211,33 +215,64 @@ public class Game {
      * 游戏主循环
      */
     private void gameLoop() {
-
-
-        while (!stateManager.isGameEnded()) {
-            // 显示当前回合信息
-            displayManager.displayCurrentTurn();
-            
-            // 获取当前玩家
-            Player currentPlayer = stateManager.getCurrentPlayer();
-            
-            // 显示当前玩家的手牌
-            displayManager.displayPlayerHand(currentPlayer);
-            
-            // 处理玩家出牌
-            List<Card> playedCards = playManager.handlePlayerPlay(currentPlayer);
-
-            // 显示出牌结果
-            displayManager.displayPlayedCards(currentPlayer, playedCards);
-            
-            // 更新游戏状态
-            stateManager.updateState(currentPlayer, playedCards);
-            
-            // 转到下一个玩家
-            stateManager.nextPlayer();
-        }
+        boolean continueGame = true;
         
-        // 游戏结束，显示结果
-        displayManager.displayGameEnd();
+        while (continueGame) {
+            // 初始化新的一局游戏
+            initGame();
+            
+            // 单局游戏循环
+            while (!stateManager.isGameEnded()) {
+                // 显示当前回合信息
+                displayManager.displayCurrentTurn();
+                
+                // 获取当前玩家
+                Player currentPlayer = stateManager.getCurrentPlayer();
+                
+                // 显示当前玩家的手牌
+                displayManager.displayPlayerHand(currentPlayer);
+                
+                // 处理玩家出牌
+                List<Card> playedCards = playManager.handlePlayerPlay(currentPlayer);
+
+                // 显示出牌结果
+                displayManager.displayPlayedCards(currentPlayer, playedCards);
+                
+                // 更新游戏状态
+                stateManager.updateState(currentPlayer, playedCards);
+                
+                // 转到下一个玩家
+                stateManager.nextPlayer();
+            }
+            
+            // 游戏结束，处理结算
+            Player winner = stateManager.getWinner();
+            handleGameEnd(winner);
+            
+            // 询问是否继续游戏
+            if (gameMode == MODE_SINGLE_PLAYER) {
+                System.out.println("\n是否继续游戏？(y/n)");
+                String input = new java.util.Scanner(System.in).nextLine().trim().toLowerCase();
+                continueGame = input.equals("y");
+                
+                if (!continueGame) {
+                    System.out.println("\n游戏结束，感谢游玩！");
+                    // 如果是人类玩家退出，清空AI玩家的得分
+                    for (Player player : players) {
+                        if (player instanceof AIPlayer) {
+                            settlementManager.clearScores();
+                            break;
+                        }
+                    }
+                } else {
+                    System.out.println("\n开始新的一局游戏！");
+                }
+            } else {
+                // 多人模式下，等待所有玩家确认是否继续
+                // TODO: 实现多人模式下的继续游戏逻辑
+                continueGame = false;
+            }
+        }
     }
     
     /**
@@ -267,5 +302,46 @@ public class Game {
      */
     public String getRuleName() {
         return gameRule instanceof NorthRule ? "北方规则" : "南方规则";
+    }
+
+    /**
+     * 处理游戏结束
+     * @param winner 获胜的玩家
+     */
+    private void handleGameEnd(Player winner) {
+        System.out.println("\n游戏结束！" + winner.getName() + " 获胜！");
+        
+        // 进行游戏结算
+        settlementManager.settleGame(players, winner);
+        
+        // 打印结算结果
+        settlementManager.printSettlementResults();
+        
+        // 如果是人类玩家退出，清空AI玩家的得分
+        if (winner instanceof HumanPlayer) {
+            for (Player player : players) {
+                if (player instanceof AIPlayer) {
+                    settlementManager.clearScores();
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取玩家的得分
+     * @param player 玩家
+     * @return 玩家得分
+     */
+    public int getPlayerScore(Player player) {
+        return settlementManager.getPlayerScore(player);
+    }
+
+    /**
+     * 获取所有玩家的得分
+     * @return 玩家得分映射
+     */
+    public Map<Player, Integer> getAllPlayerScores() {
+        return settlementManager.getAllPlayerScores();
     }
 }
