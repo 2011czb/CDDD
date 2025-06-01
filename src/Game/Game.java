@@ -10,13 +10,13 @@ import java.util.List;
 import Rules.Rule;
 import Rules.NorthRule;
 import Rules.SouthRule;
-import scoring.GameSettlementManager;
-import java.util.Map;
 
-/*game：游戏初始化，主循环，管理基本游戏状态
+/**
+ * game：游戏初始化，主循环，管理基本游戏状态
  * GameStateManager：管理游戏状态，包括当前玩家、游戏是否结束、获胜者等
  * GamePlayManager：处理玩家出牌逻辑，验证出牌是否合法
  * GameDisplayManager：显示游戏界面，包括当前玩家、游戏状态、出牌结果等
+ * GameScoreManager: 玩家的积分计算和显示
  */
 
 public class Game {
@@ -37,7 +37,7 @@ public class Game {
     private final GameStateManager stateManager;
     private final GamePlayManager playManager;
     private final GameDisplayManager displayManager;
-    private GameSettlementManager settlementManager;  // 添加结算管理器
+    private GameScoreManager scoreManager;  // 添加结算管理器
     
     /**
      * 创建单人模式游戏（1个玩家对战3个AI）
@@ -52,20 +52,28 @@ public class Game {
 
         //TODO:250531这里需要修改为动态调整，而不是开头就设置好
         // 获取AI策略实例并设置规则
-        AIStrategy strategy = aiStrategyType.getStrategy();
+        // 创建三个AI玩家，每个都有自己的策略实例
+        // 获取AI策略实例并设置规则
         Rule rule = ruleType == RULE_NORTH ? NorthRule.getInstance() : SouthRule.getInstance();
-        strategy.setRule(rule);
 
-        // 如果是高级AI策略，传入玩家信息
-        if (strategy instanceof SmartAIStrategy3) {
-            SmartAIStrategy3 smartStrategy = (SmartAIStrategy3) strategy;
-            smartStrategy.setPlayer(humanPlayer);  // 设置人类玩家
+        // 创建三个AI玩家，每个都有自己的策略实例
+        for (int i = 1; i <= 3; i++) {
+            AIStrategy strategy = aiStrategyType.getStrategy();
+            strategy.setRule(rule);
+
+            // 如果是动态策略，设置人类玩家
+            if (strategy instanceof DynamicAIStrategy) {
+                ((DynamicAIStrategy) strategy).setHumanPlayer(humanPlayer);
+            }
+
+            // 如果是高级AI策略，传入玩家信息
+            if (strategy instanceof SmartAIStrategy3) {
+                SmartAIStrategy3 smartStrategy = (SmartAIStrategy3) strategy;
+                smartStrategy.setPlayer(humanPlayer);  // 设置人类玩家
+            }
+
+            players.add(new AIPlayer("AI玩家" + i, strategy));
         }
-
-        // 创建AI玩家
-        players.add(new AIPlayer("AI玩家1", strategy));     // AI玩家
-        players.add(new AIPlayer("AI玩家2", strategy));     // AI玩家
-        players.add(new AIPlayer("AI玩家3", strategy));     // AI玩家
 
         return new Game(players, MODE_SINGLE_PLAYER, ruleType);
     }
@@ -111,7 +119,7 @@ public class Game {
         this.stateManager = new GameStateManager(players);
         this.displayManager = new GameDisplayManager(stateManager, gameRule);
         this.playManager = new GamePlayManager(gameRule, stateManager);
-        this.settlementManager = new GameSettlementManager();  // 初始化结算管理器
+        this.scoreManager = new GameScoreManager(players);
 
     }
     
@@ -182,14 +190,18 @@ public class Game {
         for (Player player : players) {
             if (player instanceof AIPlayer) {
                 AIStrategy strategy = ((AIPlayer) player).getStrategy();
-                if (strategy instanceof SmartAIStrategy3) {
+                if (strategy instanceof SmartAIStrategy3 || strategy instanceof DynamicAIStrategy) {
                     // 找到人类玩家
                     Player humanPlayer = players.stream()
                             .filter(p -> p instanceof HumanPlayer)
                             .findFirst()
                             .orElse(null);
-                    if (humanPlayer != null) {
+                    if (humanPlayer != null && strategy instanceof SmartAIStrategy3) {
                         ((SmartAIStrategy3) strategy).setPlayer((HumanPlayer)humanPlayer);
+                    }else if(humanPlayer != null && strategy instanceof DynamicAIStrategy){
+                        DynamicAIStrategy dynamicStrategy = (DynamicAIStrategy) strategy;
+                        dynamicStrategy.setHumanPlayer((HumanPlayer) humanPlayer);
+                        dynamicStrategy.setStateManager(stateManager);
                     }
                 }
             }
@@ -220,7 +232,7 @@ public class Game {
         while (continueGame) {
             // 初始化新的一局游戏
             initGame();
-            
+
             // 单局游戏循环
             while (!stateManager.isGameEnded()) {
                 // 显示当前回合信息
@@ -246,8 +258,7 @@ public class Game {
             }
             
             // 游戏结束，处理结算
-            Player winner = stateManager.getWinner();
-            handleGameEnd(winner);
+            handleGameEnd();
             
             // 询问是否继续游戏
             if (gameMode == MODE_SINGLE_PLAYER) {
@@ -260,7 +271,7 @@ public class Game {
                     // 如果是人类玩家退出，清空AI玩家的得分
                     for (Player player : players) {
                         if (player instanceof AIPlayer) {
-                            settlementManager.clearScores();
+                            scoreManager.clearScores();
                             break;
                         }
                     }
@@ -306,42 +317,20 @@ public class Game {
 
     /**
      * 处理游戏结束
-     * @param winner 获胜的玩家
      */
-    private void handleGameEnd(Player winner) {
+    private void handleGameEnd() {
+        // 确定获胜者
+        Player winner = stateManager.getWinner();
         System.out.println("\n游戏结束！" + winner.getName() + " 获胜！");
-        
-        // 进行游戏结算
-        settlementManager.settleGame(players, winner);
+        // 结算得分
+        scoreManager.settleGame(players, winner);
         
         // 打印结算结果
-        settlementManager.printSettlementResults();
+        scoreManager.printSettlementResults();
         
-        // 如果是人类玩家退出，清空AI玩家的得分
-        if (winner instanceof HumanPlayer) {
-            for (Player player : players) {
-                if (player instanceof AIPlayer) {
-                    settlementManager.clearScores();
-                    break;
-                }
-            }
-        }
+        // 重置游戏状态
+        stateManager.reset();
     }
 
-    /**
-     * 获取玩家的得分
-     * @param player 玩家
-     * @return 玩家得分
-     */
-    public int getPlayerScore(Player player) {
-        return settlementManager.getPlayerScore(player);
-    }
 
-    /**
-     * 获取所有玩家的得分
-     * @return 玩家得分映射
-     */
-    public Map<Player, Integer> getAllPlayerScores() {
-        return settlementManager.getAllPlayerScores();
-    }
 }

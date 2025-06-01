@@ -15,6 +15,7 @@ public abstract class Player {
     private List<Card> hand; // 玩家手牌
     private int lastPlayerIndex;  // 上一个出牌的玩家索引
     private int currentPlayerIndex;  // 当前玩家索引
+    private int score; // 添加积分字段
     /**
      * 构造函数，创建玩家并初始化手牌
      * @param name 玩家姓名
@@ -144,6 +145,18 @@ public abstract class Player {
 
     public int getCurrentPlayerIndex() {
         return currentPlayerIndex;
+    }
+    
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public void addScore(int points) {
+        this.score += points;
     }
 }
 

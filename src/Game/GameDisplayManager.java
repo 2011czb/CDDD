@@ -96,14 +96,12 @@ public class GameDisplayManager {
         
         //TODO:250530这里只显示人类玩家可出的牌型用来做提示功能，删掉if就会也显示ai可出的牌
         if (player instanceof HumanPlayer){
-
-        // 使用PlayablePatternUtil获取可出的牌型
-        Map<String, List<CardGroup>> playablePatterns = 
-            PlayablePatternUtil.getPlayablePatterns(hand, lastCards, gameRule);
-        
-        // 打印可出的牌型
-        PlayablePatternUtil.printPlayablePatterns(playablePatterns, lastCards, lastPlayerIndex, currentPlayerIndex);
-
+            // 使用PlayablePatternUtil获取可出的牌型
+            Map<String, List<CardGroup>> playablePatterns = 
+                PlayablePatternUtil.getPlayablePatterns(hand, lastCards, gameRule, lastPlayerIndex, currentPlayerIndex);
+            
+            // 打印可出的牌型
+            PlayablePatternUtil.printPlayablePatterns(playablePatterns, lastCards, lastPlayerIndex, currentPlayerIndex);
         }
     }
 

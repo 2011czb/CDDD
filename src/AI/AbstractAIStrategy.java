@@ -1,3 +1,4 @@
+// AbstractAIStrategy.java
 package AI;
 
 import PokerPatterns.basis.*;
@@ -8,7 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import Players.*;
 
-
 /**
  * AI策略抽象基类
  * 根据游戏规则动态选择比较策略
@@ -18,18 +18,17 @@ import Players.*;
  */
 public abstract class AbstractAIStrategy implements AIStrategy {
     protected static final List<PokerPattern> PATTERNS = Arrays.asList(
-        One.getInstance(),           // 单张
-        Pair.getInstance(),          // 对子
-        Three.getInstance(),         // 三张
-        Straight.getInstance(),      // 杂顺
-        Flush.getInstance(),         // 同花五
-        FullHouse.getInstance(),     // 三带一对
-        FourofaKind.getInstance(),   // 四带一
-        StraightFlush.getInstance()  // 同花顺
+            One.getInstance(),           // 单张
+            Pair.getInstance(),          // 对子
+            Three.getInstance(),         // 三张
+            Straight.getInstance(),      // 杂顺
+            Flush.getInstance(),         // 同花五
+            FullHouse.getInstance(),     // 三带一对
+            FourofaKind.getInstance(),   // 四带一
+            StraightFlush.getInstance()  // 同花顺
     );
 
     protected Rule currentRule;
-    private final Random random = new Random();
 
     /**
      * 设置所使用规则
@@ -131,17 +130,6 @@ public abstract class AbstractAIStrategy implements AIStrategy {
     }
 
     /**
-     * 随机选择一个牌型
-     * */
-    public CardGroup findRandomCardGroup(List<CardGroup> groups) {
-        if (groups.isEmpty()) {
-            return null;
-        }
-        int randomIndex = random.nextInt(groups.size());
-        return groups.get(randomIndex);
-    }
-
-    /**
      * 获取所有可能的牌型组合
      */
     protected List<CardGroup> getAllPossiblePatterns(Player player) {
@@ -152,21 +140,21 @@ public abstract class AbstractAIStrategy implements AIStrategy {
         // 使用Stream的collect方法，通过比较牌组中的牌来判断是否重复
         Comparator<CardGroup> groupComparator = (group1, group2) -> {
             List<Integer> values1 = group1.getCards().stream()
-                .map(Card::getIntValue)
-                .sorted()
-                .collect(Collectors.toList());
+                    .map(Card::getIntValue)
+                    .sorted()
+                    .collect(Collectors.toList());
             List<Integer> values2 = group2.getCards().stream()
-                .map(Card::getIntValue)
-                .sorted()
-                .collect(Collectors.toList());
+                    .map(Card::getIntValue)
+                    .sorted()
+                    .collect(Collectors.toList());
             return values1.equals(values2) ? 0 : 1;
         };
-        
+
         return allPatterns.stream()
-            .collect(Collectors.collectingAndThen(
-                Collectors.toCollection(() -> new TreeSet<>(groupComparator)),
-                ArrayList::new
-            ));
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toCollection(() -> new TreeSet<>(groupComparator)),
+                        ArrayList::new
+                ));
     }
 
     /**
@@ -174,8 +162,8 @@ public abstract class AbstractAIStrategy implements AIStrategy {
      */
     protected List<Card> getCardsByIndices(List<Card> hand, List<Integer> indices) {
         return indices.stream()
-            .map(hand::get)
-            .collect(Collectors.toList());
+                .map(hand::get)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -194,10 +182,38 @@ public abstract class AbstractAIStrategy implements AIStrategy {
      */
     protected List<Card> playCardsAndDisplay(Player player, List<Integer> indices) {
         List<Card> playedCards = player.playCards(indices);
-        System.out.println(player.getName() + "出牌：" + 
-            playedCards.stream()
-                .map(Card::getDisplayName)
-                .collect(Collectors.joining(" ")));
+        System.out.println(player.getName() + "出牌：" +
+                playedCards.stream()
+                        .map(Card::getDisplayName)
+                        .collect(Collectors.joining(" ")));
         return playedCards;
     }
-} 
+
+    // 新增：识别废牌（无法组成任何牌型的单张牌）
+    protected List<Card> identifyWasteCards(List<Card> hand) {
+        // 获取所有可能的牌型组合
+        List<CardGroup> allPatterns = getAllPossiblePatternsForHand(hand);
+
+        // 收集所有被牌型组合覆盖的牌
+        Set<Card> coveredCards = new HashSet<>();
+        for (CardGroup group : allPatterns) {
+            if (group.getCards().size() > 1) { // 只考虑多张牌的组合
+                coveredCards.addAll(group.getCards());
+            }
+        }
+
+        // 废牌是未被覆盖的牌
+        return hand.stream()
+                .filter(card -> !coveredCards.contains(card))
+                .collect(Collectors.toList());
+    }
+
+    // 新增：为指定手牌获取所有可能的牌型组合
+    private List<CardGroup> getAllPossiblePatternsForHand(List<Card> hand) {
+        List<CardGroup> allPatterns = new ArrayList<>();
+        for (PokerPattern pattern : PATTERNS) {
+            allPatterns.addAll(pattern.potentialCardGroup(hand));
+        }
+        return allPatterns;
+    }
+}

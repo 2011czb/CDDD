@@ -28,9 +28,11 @@ public class PlayablePatternUtil {
      * @param hand 手牌
      * @param lastCards 上一手牌
      * @param rule 当前规则
+     * @param lastPlayerIndex 上一个出牌的玩家索引
+     * @param currentPlayerIndex 当前玩家索引
      * @return 可以出的牌型列表，按牌型分组
      */
-    public static Map<String, List<CardGroup>> getPlayablePatterns(List<Card> hand, List<Card> lastCards, Rule rule) {
+    public static Map<String, List<CardGroup>> getPlayablePatterns(List<Card> hand, List<Card> lastCards, Rule rule, int lastPlayerIndex, int currentPlayerIndex) {
         Map<String, List<CardGroup>> playablePatterns = new TreeMap<>();
         
         // 如果是第一手牌，只需要包含方块3
@@ -47,8 +49,8 @@ public class PlayablePatternUtil {
             return playablePatterns;
         }
 
-        // 如果上一手牌是当前玩家出的（其他玩家都过牌），则所有牌型都可以出
-        if (lastCards.isEmpty()) {
+        // 如果上一个出牌的是当前玩家（其他玩家都过牌），则所有牌型都可以出
+        if (lastPlayerIndex == currentPlayerIndex) {
             for (PokerPattern pattern : PATTERNS) {
                 List<CardGroup> groups = pattern.potentialCardGroup(hand);
                 if (!groups.isEmpty()) {

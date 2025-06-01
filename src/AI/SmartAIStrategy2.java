@@ -25,13 +25,13 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
         }
 
         // 找出最大的牌型组合
-        CardGroup randomGroup = findRandomCardGroup(allPatterns);
-        if (randomGroup == null) {
+        CardGroup maxGroup = findMaxCardGroup(allPatterns);
+        if (maxGroup == null) {
             return Collections.emptyList();
         }
 
         // 随机选择一个牌型组合
-        List<Integer> indices = getIndicesByCards(player.getHand(), randomGroup.getCards());
+        List<Integer> indices = getIndicesByCards(player.getHand(), maxGroup.getCards());
         return playCardsAndDisplay(player, indices);
     }
 
@@ -50,13 +50,13 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
         }
 
         // 随机选择一个比上一手大的组合
-        CardGroup randomLargerGroup = findRandomCardGroup(largerGroups);
-        if (randomLargerGroup == null) {
+        CardGroup maxLargerGroup = findMaxCardGroup(largerGroups);
+        if (maxLargerGroup == null) {
             return Collections.emptyList();
         }
 
         // 获取牌的索引并出牌
-        List<Integer> indices = getIndicesByCards(player.getHand(), randomLargerGroup.getCards());
+        List<Integer> indices = getIndicesByCards(player.getHand(), maxLargerGroup.getCards());
         return playCardsAndDisplay(player, indices);
     }
 
@@ -84,14 +84,14 @@ public class SmartAIStrategy2 extends AbstractAIStrategy {
             return Collections.emptyList();
         }
 
-        // 随机选择一个包含方块三的组合
-        CardGroup randomGroup = findRandomCardGroup(groupsWithDiamondThree);
-        if (randomGroup == null) {
+        // 选择一个包含方块三的最大组合
+        CardGroup maxGroup = findMaxCardGroup(groupsWithDiamondThree);
+        if (maxGroup == null) {
             return Collections.emptyList();
         }
 
         // 获取牌的索引并出牌
-        List<Integer> indices = getIndicesByCards(player.getHand(), randomGroup.getCards());
+        List<Integer> indices = getIndicesByCards(player.getHand(), maxGroup.getCards());
         return playCardsAndDisplay(player, indices);
     }
 
