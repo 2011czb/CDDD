@@ -10,6 +10,7 @@ import PokerPatterns.PokerPatternMatcher;
  * 规则：
  * 1. 任何两个有效牌型都可以比较
  * 2. 牌型大小按照权重排序：同花顺(8) > 四带一(7) > 三带一对(6) > 同花五(5) > 杂顺(4)
+ * 3. 只有当critical card比前一手牌大时，这个牌型才能比前一手牌大
  */
 public class NorthRule extends AbstractRule {
     private static final NorthRule INSTANCE = new NorthRule();
@@ -40,7 +41,14 @@ public class NorthRule extends AbstractRule {
         // 比较牌型权重
         int weightCompare = Integer.compare(result1.getPatternWeight(), result2.getPatternWeight());
         if (weightCompare != 0) {
-            return weightCompare;
+            // 如果牌型权重不同，还需要检查critical card的大小
+            if (weightCompare > 0) {
+                // cards1的牌型权重更大，检查其critical card是否也更大
+                return result1.getCriticalCardWeight() > result2.getCriticalCardWeight() ? 1 : 0;
+            } else {
+                // cards2的牌型权重更大，检查其critical card是否也更大
+                return result2.getCriticalCardWeight() > result1.getCriticalCardWeight() ? -1 : 0;
+            }
         }
         
         // 如果牌型权重相同，再比较关键牌权重
