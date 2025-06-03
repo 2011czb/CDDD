@@ -34,14 +34,14 @@
             android:id="@+id/createRoom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="创建房间（作为主机）"
+            android:text="创建房间"
             android:checked="true" />
 
         <RadioButton
             android:id="@+id/joinRoom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="加入房间（作为客户端）" />
+            android:text="加入房间" />
     </RadioGroup>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -62,10 +62,10 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
-        android:id="@+id/startGameButton"
+        android:id="@+id/connectButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="开始游戏"
+        android:text="连接"
         android:layout_marginTop="32dp"
         app:layout_constraintTop_toBottomOf="@id/roomNameLayout" />
 

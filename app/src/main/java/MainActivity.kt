@@ -7,6 +7,7 @@ import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
+import AI.AIStrategyType
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,6 +16,7 @@ class MainActivity : AppCompatActivity() {
 
         val gameModeGroup = findViewById<RadioGroup>(R.id.gameModeGroup)
         val gameRuleGroup = findViewById<RadioGroup>(R.id.gameRuleGroup)
+        val aiStrategyGroup = findViewById<RadioGroup>(R.id.aiStrategyGroup)
         val playerNameInput = findViewById<TextInputEditText>(R.id.playerNameInput)
         val startButton = findViewById<Button>(R.id.startButton)
 
@@ -31,15 +33,22 @@ class MainActivity : AppCompatActivity() {
                 else -> "NORTH"
             }
 
+            val aiStrategy = when (aiStrategyGroup.checkedRadioButtonId) {
+                R.id.strategyBasic -> "BASIC"
+                R.id.strategyAdvanced -> "ADVANCED"
+                R.id.strategyExpert -> "EXPERT"
+                else -> "BASIC"
+            }
+
             val intent = when (gameModeGroup.checkedRadioButtonId) {
                 R.id.modeSingle -> Intent(this, SinglePlayerActivity::class.java)
                 R.id.modeMulti -> Intent(this, MultiplayerActivity::class.java)
-                R.id.modeTest -> Intent(this, TestActivity::class.java)
                 else -> return@setOnClickListener
             }
 
             intent.putExtra("playerName", playerName)
             intent.putExtra("gameRule", gameRule)
+            intent.putExtra("aiStrategy", aiStrategy)
             startActivity(intent)
         }
     }
@@ -47,11 +56,16 @@ class MainActivity : AppCompatActivity() {
 
 enum class GameMode {
     SINGLE_PLAYER,
-    MULTIPLAYER,
-    TEST
+    MULTIPLAYER
 }
 
 enum class GameRule {
     NORTH,
     SOUTH
+}
+
+enum class AIStrategy {
+    BASIC,
+    ADVANCED,
+    EXPERT
 }
