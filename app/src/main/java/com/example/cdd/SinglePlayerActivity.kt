@@ -1,5 +1,6 @@
 package com.example.cdd
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.RadioGroup
@@ -26,8 +27,14 @@ class SinglePlayerActivity : AppCompatActivity() {
                 else -> AIStrategyType.BASIC
             }
 
-            // TODO: 启动游戏逻辑
-            Toast.makeText(this, "开始游戏：$playerName vs AI (${aiStrategy.name})", Toast.LENGTH_SHORT).show()
+            // 跳转到游戏界面
+            val intent = Intent(this, GameActivity::class.java).apply {
+                putExtra("playerName", playerName)
+                putExtra("gameRule", gameRule)
+                putExtra("gameMode", "SINGLE")
+                putExtra("aiStrategy", aiStrategy.name)
+            }
+            startActivity(intent)
         }
     }
 }

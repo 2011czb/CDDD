@@ -1,5 +1,6 @@
 package com.example.cdd
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.RadioGroup
@@ -32,8 +33,15 @@ class MultiplayerActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // TODO: 实现网络连接和游戏逻辑
-            Toast.makeText(this, "开始游戏：$playerName 在房间 $roomName", Toast.LENGTH_SHORT).show()
+            // 跳转到游戏界面
+            val intent = Intent(this, GameActivity::class.java).apply {
+                putExtra("playerName", playerName)
+                putExtra("gameRule", gameRule)
+                putExtra("gameMode", "MULTI")
+                putExtra("connectionType", connectionType.name)
+                putExtra("roomName", roomName)
+            }
+            startActivity(intent)
         }
     }
 }

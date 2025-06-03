@@ -43,6 +43,12 @@
             android:screenOrientation="sensor"
             android:theme="@style/Theme.CDD" />
 
+        <activity
+            android:name=".GameActivity"
+            android:exported="false"
+            android:screenOrientation="sensor"
+            android:theme="@style/Theme.CDD" />
+
     </application>
 
 </manifest>
