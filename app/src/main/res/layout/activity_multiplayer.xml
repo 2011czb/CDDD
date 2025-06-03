@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="多人模式设置"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp" />
+
+    <RadioGroup
+        android:id="@+id/connectionTypeGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@id/titleText">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="选择连接方式："
+            android:textStyle="bold" />
+
+        <RadioButton
+            android:id="@+id/createRoom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="创建房间（作为主机）"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/joinRoom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="加入房间（作为客户端）" />
+    </RadioGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/roomNameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:hint="房间名称"
+        app:layout_constraintTop_toBottomOf="@id/connectionTypeGroup">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/roomNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLines="1" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/startGameButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="开始游戏"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@id/roomNameLayout" />
+
+</androidx.constraintlayout.widget.ConstraintLayout> 
