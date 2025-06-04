@@ -44,16 +44,6 @@ public class FullHouse extends PokerPattern {
     }
 
     @Override
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public int getPatternWeight() {
-        return this.weight;
-    }
-
-    @Override
     public int getCritical(List<Card> cards) {
         // 按牌值排序
         Collections.sort(cards, Comparator.comparingInt((Card card) -> card.getRank().getValue()));

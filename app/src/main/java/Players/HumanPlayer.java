@@ -11,9 +11,11 @@ import java.util.Scanner;
  * 实现了人类玩家的选牌等
  * */
 public class HumanPlayer extends Player {
+    private List<Integer> selectedCardIndices;
 
     public HumanPlayer(String name) {
         super(name);
+        this.selectedCardIndices = new ArrayList<>();
     }
 
     @Override
@@ -38,10 +40,11 @@ public class HumanPlayer extends Player {
 
         if (input.equalsIgnoreCase("P")) {
             System.out.println(getName() + "选择不出牌");
+            selectedCardIndices.clear();
             return Collections.emptyList();
         }
 
-        List<Integer> cardIndices = new ArrayList<>();
+        selectedCardIndices.clear();
         try {
             String[] indexStrings = input.split("\\s+");
             for (String indexStr : indexStrings) {
@@ -50,27 +53,41 @@ public class HumanPlayer extends Player {
                     System.out.println("无效的卡牌索引: " + (index + 1));
                     return play(lastCards);
                 }
-                cardIndices.add(index);
+                selectedCardIndices.add(index);
             }
         } catch (NumberFormatException e) {
             System.out.println("输入格式错误，请输入数字或'P'");
             return play(lastCards);
         }
 
-        if (cardIndices.isEmpty()) {
+        if (selectedCardIndices.isEmpty()) {
             System.out.println("未选择任何牌，请重新选择");
             return play(lastCards);
         }
 
         System.out.print("你选择了: ");
         List<Card> selectedCards = new ArrayList<>();
-        for (int index : cardIndices) {
+        for (int index : selectedCardIndices) {
             Card card = hand.get(index);
             selectedCards.add(card);
             System.out.print(card.getDisplayName() + " ");
         }
         System.out.println();
 
-        return playCards(cardIndices);
+        return playCards(selectedCardIndices);
+    }
+
+    /**
+     * 获取选中的牌的索引
+     */
+    public List<Integer> getSelectedCardIndices() {
+        return new ArrayList<>(selectedCardIndices);
+    }
+
+    /**
+     * 设置选中的牌的索引
+     */
+    public void setSelectedCardIndices(List<Integer> indices) {
+        this.selectedCardIndices = new ArrayList<>(indices);
     }
 }

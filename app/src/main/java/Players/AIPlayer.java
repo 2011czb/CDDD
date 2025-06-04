@@ -8,7 +8,7 @@ import AI.*;
  * AI玩家
  * */
 public class AIPlayer extends Player {
-    private final AIStrategy aiStrategy;
+    private AIStrategy aiStrategy;
 
     public AIPlayer(String name, AIStrategy strategy) {
         super(name);
@@ -16,11 +16,19 @@ public class AIPlayer extends Player {
     }
 
     public AIPlayer(String name) {
-        this(name, SmartAIStrategy1.INSTANCE);//默认简单规则
+        this(name, MinAIStrategy.INSTANCE);//默认简单规则
     }
 
     public AIStrategy getStrategy() {
         return aiStrategy;
+    }
+
+    /**
+     * 设置AI策略
+     * @param strategy 新的AI策略
+     */
+    public void setStrategy(AIStrategy strategy) {
+        this.aiStrategy = strategy;
     }
 
     @Override

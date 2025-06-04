@@ -4,138 +4,147 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
-    android:padding="16dp">
+    android:background="@color/background_color">
 
-    <!-- 上方玩家区域 -->
+    <!-- 顶部状态栏 -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/topPlayerArea"
-        android:layout_width="0dp"
-        android:layout_height="100dp"
+        android:id="@+id/statusBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_margin="8dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:padding="12dp">
 
             <TextView
-                android:id="@+id/topPlayerName"
-                android:layout_width="match_parent"
+                android:id="@+id/tvCurrentPlayer"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="上方玩家"
-                android:textColor="#333333"
+                android:layout_weight="1"
+                android:textColor="@color/text_primary"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:text="当前玩家：玩家1" />
 
             <TextView
-                android:id="@+id/topPlayerCards"
-                android:layout_width="match_parent"
+                android:id="@+id/tvGameRule"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="剩余: 13"
-                android:textColor="#666666"
-                android:textSize="14sp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                tools:text="北方规则" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- 左侧玩家区域 -->
+    <!-- 其他玩家区域 -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/leftPlayerArea"
-        android:layout_width="100dp"
-        android:layout_height="0dp"
+        android:id="@+id/otherPlayersArea"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_margin="8dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/topPlayerArea">
+        app:layout_constraintTop_toBottomOf="@id/statusBar">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="12dp">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp">
 
-            <TextView
-                android:id="@+id/leftPlayerName"
-                android:layout_width="match_parent"
+            <!-- 左侧玩家 -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="左侧玩家"
-                android:textColor="#333333"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/leftPlayerCards"
-                android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/leftPlayerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    tools:text="玩家2" />
+
+                <TextView
+                    android:id="@+id/leftPlayerCards"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    tools:text="剩余: 13" />
+            </LinearLayout>
+
+            <!-- 上方玩家 -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="剩余: 13"
-                android:textColor="#666666"
-                android:textSize="14sp" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+                android:orientation="vertical">
 
-    <!-- 右侧玩家区域 -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/rightPlayerArea"
-        android:layout_width="100dp"
-        android:layout_height="0dp"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/topPlayerArea">
+                <TextView
+                    android:id="@+id/topPlayerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    tools:text="玩家3" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="12dp">
+                <TextView
+                    android:id="@+id/topPlayerCards"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    tools:text="剩余: 13" />
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/rightPlayerName"
-                android:layout_width="match_parent"
+            <!-- 右侧玩家 -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="右侧玩家"
-                android:textColor="#333333"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/rightPlayerCards"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="剩余: 13"
-                android:textColor="#666666"
-                android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/rightPlayerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    tools:text="玩家4" />
+
+                <TextView
+                    android:id="@+id/rightPlayerCards"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    tools:text="剩余: 13" />
+            </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
     <!-- 出牌区域 -->
     <androidx.cardview.widget.CardView
         android:id="@+id/playArea"
-        android:layout_width="0dp"
-        android:layout_height="180dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:layout_margin="8dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
         app:layout_constraintBottom_toTopOf="@id/playerHandArea"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/topPlayerArea">
+        app:layout_constraintTop_toBottomOf="@id/otherPlayersArea">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -143,112 +152,36 @@
             android:orientation="vertical"
             android:padding="12dp">
 
+            <!-- 上一手牌 -->
             <TextView
-                android:id="@+id/currentPlayerText"
+                android:id="@+id/tvLastPlayedCards"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="当前玩家："
-                android:textColor="#333333"
+                android:textColor="@color/text_primary"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintTop_toTopOf="parent" />
+                tools:text="上一手牌：方块3 方块4 方块5" />
 
+            <!-- 游戏状态 -->
             <TextView
-                android:id="@+id/gameRuleText"
+                android:id="@+id/tvGameStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="游戏规则："
-                android:textColor="#666666"
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp"
-                app:layout_constraintTop_toBottomOf="@id/currentPlayerText" />
+                tools:text="等待出牌..." />
 
-            <TextView
-                android:id="@+id/playerScores"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="玩家积分："
-                android:textColor="#666666"
-                android:textSize="14sp"
-                app:layout_constraintTop_toBottomOf="@id/gameRuleText" />
-
-            <TextView
-                android:id="@+id/lastPlayText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="上家出牌："
-                android:textColor="#666666"
-                android:textSize="14sp"
-                app:layout_constraintTop_toBottomOf="@id/playerScores" />
-
-            <!-- 游戏状态提示 -->
-            <TextView
-                android:id="@+id/gameStatusText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="#E91E63"
-                android:textSize="14sp"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@id/lastPlayText" />
-
-            <!-- 其他玩家出牌记录 -->
-            <ScrollView
-                android:id="@+id/playHistoryScroll"
+            <!-- 出牌记录 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/playHistoryRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                android:layout_marginTop="8dp"
                 android:layout_weight="1"
-                android:background="#FFFFFF"
-                android:padding="8dp"
-                app:layout_constraintTop_toBottomOf="@id/playerScores"
-                app:layout_constraintBottom_toTopOf="@id/playerCardsContainer"
-                app:layout_constraintHeight_percent="0.2">
-
-                <LinearLayout
-                    android:id="@+id/playHistoryContent"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/playHistoryTitle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="出牌记录"
-                        android:textColor="#333333"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </ScrollView>
-
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:background="#FFFFFF"
-                android:padding="8dp">
-
-                <LinearLayout
-                    android:id="@+id/hintArea"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/hintTitle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="可出的牌型："
-                        android:textColor="#333333"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </ScrollView>
+                android:background="@drawable/bg_rounded_corner"
+                android:padding="8dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -256,7 +189,7 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/playerHandArea"
         android:layout_width="match_parent"
-        android:layout_height="160dp"
+        android:layout_height="wrap_content"
         android:layout_margin="8dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
@@ -264,69 +197,51 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="12dp">
 
-            <TextView
-                android:id="@+id/playerName"
+            <!-- 玩家手牌 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPlayerHand"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="玩家"
-                android:textColor="#333333"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:orientation="horizontal"
+                android:padding="4dp" />
 
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:scrollbars="none">
-
-                <LinearLayout
-                    android:id="@+id/playerCardsContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    app:layout_constraintTop_toBottomOf="@id/playHistoryScroll" />
-            </HorizontalScrollView>
-
+            <!-- 操作按钮 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:gravity="center"
-                android:orientation="horizontal"
-                android:paddingTop="8dp"
-                app:layout_constraintTop_toBottomOf="@id/playerCardsContainer">
+                android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/hintButton"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnHint"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:backgroundTint="#4CAF50"
                     android:text="提示"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/color_hint" />
 
-                <Button
-                    android:id="@+id/playButton"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPlayCards"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:backgroundTint="#2196F3"
                     android:text="出牌"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/color_play" />
 
-                <Button
-                    android:id="@+id/passButton"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPass"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="#FF5722"
-                    android:text="不出"
-                    android:textColor="#FFFFFF" />
+                    android:text="过"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/color_pass" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

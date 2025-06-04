@@ -70,16 +70,6 @@ public class Straight extends PokerPattern {
     }
     
     @Override
-    public String getName() {
-        return this.name;
-    }
-    
-    @Override
-    public int getPatternWeight() {
-        return this.weight;
-    }
-    
-    @Override
     public int getCritical(List<Card> cards) {
         // 先对牌进行排序
         List<Card> sortedCards = new ArrayList<>(cards);

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="48dp"
-    android:layout_height="72dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:layout_margin="4dp"
-    app:cardCornerRadius="4dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="80dp"
+        android:layout_height="120dp"
         android:orientation="vertical"
-        android:background="@drawable/card_background"
-        android:padding="2dp">
+        android:background="@android:color/white"
+        android:padding="4dp">
 
         <!-- 左上角 -->
         <LinearLayout
@@ -21,50 +21,47 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/cardValueTop"
+                android:id="@+id/tvCardRankTop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
             <TextView
-                android:id="@+id/cardSuitTop"
+                android:id="@+id/tvCardSuitTop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:textSize="12sp"/>
         </LinearLayout>
 
-        <!-- 中间花色 -->
+        <!-- 中间 -->
         <TextView
-            android:id="@+id/cardSuitCenter"
+            android:id="@+id/tvCardSuitCenter"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textSize="24sp"/>
 
         <!-- 右下角 -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="end">
 
             <TextView
-                android:id="@+id/cardValueBottom"
+                android:id="@+id/tvCardSuitBottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:id="@+id/tvCardRankBottom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/cardSuitBottom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
         </LinearLayout>
     </LinearLayout>
 

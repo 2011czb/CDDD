@@ -35,18 +35,6 @@ public class Pair extends PokerPattern {
         return false;
     }
 
-    // 重写getName方法，返回牌型的名称
-    @Override
-    public String getName(){
-        return this.name;
-    }
-
-    // 重写getPatternWeight方法，返回牌型的权重
-    @Override
-    public int getPatternWeight(){
-        return this.weight;
-    }
-
     // 重写getCritical方法，返回牌型的关键值
     @Override
     public int getCritical(List<Card> cards){

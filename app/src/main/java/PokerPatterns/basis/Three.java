@@ -31,16 +31,6 @@ public class Three extends PokerPattern {
     }
 
     @Override
-    public String getName(){
-        return this.name;
-    }
-
-    @Override
-    public int getPatternWeight(){
-        return this.weight;
-    }
-
-    @Override
     public int getCritical(List<Card> cards){
         return Math.max(Math.max(cards.get(0).getWeight(), cards.get(1).getWeight()), cards.get(2).getWeight());
     }

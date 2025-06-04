@@ -8,7 +8,6 @@ import cards.Rank;
 import cards.Suit;
 import java.util.*;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import Game.GameStateManager;
 import PokerPatterns.PlayablePatternUtil;
@@ -39,13 +38,13 @@ public class DynamicAIStrategy extends AbstractAIStrategy {
 
     public DynamicAIStrategy() {
         // 默认使用中等智能策略
-        this.currentStrategy = SmartAIStrategy2.INSTANCE;
+        this.currentStrategy = MaxAIStrategy.INSTANCE;
     }
 
     public void setHumanPlayer(HumanPlayer player) {
         this.humanPlayer = player;
-        if (currentStrategy instanceof SmartAIStrategy3) {
-            ((SmartAIStrategy3) currentStrategy).setPlayer(player);
+        if (currentStrategy instanceof SmartAIStrategy) {
+            ((SmartAIStrategy) currentStrategy).setPlayer(player);
         }
     }
 
@@ -75,7 +74,6 @@ public class DynamicAIStrategy extends AbstractAIStrategy {
                         stateManager.getCurrentPlayerIndex()
                 );
                 if (humanPlayablePatterns.isEmpty() && player.getHand().size() < 8) {
-                    System.out.println("//250531 动态策略：检测到人类玩家不能接牌且我的手牌数小于8，选择过牌");
                     return new ArrayList<>();
                 }
             }
@@ -106,34 +104,24 @@ public class DynamicAIStrategy extends AbstractAIStrategy {
                 (wasteCardFactor * WEIGHT_WASTE_CARDS) +
                 (randomFactor * WEIGHT_RANDOM);
 
-        // 3. 记录决策因素值
-        System.out.printf("//250531 动态策略：决策因素 [手牌:%.2f, 积分:%.2f, 黑桃2:%.1f, 玩家手牌:%.2f, 废牌:%.2f, 随机:%.2f] = %.2f%n",
-                handSizeFactor, scoreDiffFactor, hasSpade2Factor, playerHandFactor, wasteCardFactor, randomFactor, decisionValue);
 
-        // 4. 根据决策值选择策略
+        // 3. 根据决策值选择策略
         AIStrategy previousStrategy = currentStrategy;
 
-        if (decisionValue < THRESHOLD_CONSERVATIVE) {
-            System.out.println("//250531 动态策略：选择保守策略（最小牌）");
-            currentStrategy = SmartAIStrategy1.INSTANCE;
-        } else if (decisionValue > THRESHOLD_AGGRESSIVE) {
-            System.out.println("//250531 动态策略：选择激进策略（最大牌）");
-            currentStrategy = SmartAIStrategy2.INSTANCE;
-        } else {
-            System.out.println("//250531 动态策略：选择平衡策略（分析对手）");
-            currentStrategy = SmartAIStrategy3.INSTANCE;
-            if (humanPlayer != null && currentStrategy instanceof SmartAIStrategy3) {
-                ((SmartAIStrategy3) currentStrategy).setPlayer(humanPlayer);
+        if (decisionValue < THRESHOLD_CONSERVATIVE) {  // 选择保守策略（最小牌）
+            currentStrategy = MinAIStrategy.INSTANCE;
+        } else if (decisionValue > THRESHOLD_AGGRESSIVE) {  // 选择激进策略（最大牌）
+            currentStrategy = MaxAIStrategy.INSTANCE;
+        } else {  // 选择平衡策略（分析对手）
+            currentStrategy = SmartAIStrategy.INSTANCE;
+            if (humanPlayer != null && currentStrategy instanceof SmartAIStrategy) {
+                ((SmartAIStrategy) currentStrategy).setPlayer(humanPlayer);
             }
         }
 
         // 如果策略发生变化，确保新策略设置了正确的规则
-        if (currentStrategy != previousStrategy) {
-            currentStrategy.setRule(currentRule);
-            System.out.println(player.getName() + " 策略已切换：" +
-                    previousStrategy.getClass().getSimpleName() + " -> " +
-                    currentStrategy.getClass().getSimpleName());
-        }
+        if (currentStrategy != previousStrategy) {  // 如果策略发生变化，确保新策略设置了正确的规则
+            currentStrategy.setRule(currentRule);}
 
         currentStrategy.setRule(currentRule);
     }
@@ -185,11 +173,9 @@ public class DynamicAIStrategy extends AbstractAIStrategy {
         int playerHandSize = humanPlayer.getHand().size();
 
         if (aiHandSize >= 7 && aiHandSize <= 13) {
-            if (playerHandSize <= PLAYER_HAND_THRESHOLD) {
-                System.out.println("//250531 动态策略：玩家手牌较少（" + playerHandSize + "张），选择更激进的策略");
+            if (playerHandSize <= PLAYER_HAND_THRESHOLD) {  // 玩家手牌较少，选择更激进的策略
                 return 0.8;
-            } else {
-                System.out.println("//250531 动态策略：玩家手牌较多（" + playerHandSize + "张），选择更保守的策略");
+            } else {  // 玩家手牌较多，选择更保守的策略
                 return 0.2;
             }
         }
@@ -202,10 +188,7 @@ public class DynamicAIStrategy extends AbstractAIStrategy {
      */
     private double calculateWasteCardFactor(List<Card> hand) {
         List<Card> wasteCards = identifyWasteCards(hand);
-        double wasteRatio = wasteCards.size() / (double) hand.size();
-
-        System.out.println("//250531 动态策略：识别到 " + wasteCards.size() + " 张废牌: " +
-                wasteCards.stream().map(Card::getDisplayName).collect(Collectors.joining(" ")));
+        double wasteRatio = wasteCards.size() / (double) hand.size();  // 废牌比例
 
         // 废牌越多，越应该选择保守策略（优先出废牌）
         return wasteRatio > 0.3 ? 1.0 : wasteRatio;
