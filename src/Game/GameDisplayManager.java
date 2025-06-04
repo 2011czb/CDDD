@@ -11,7 +11,6 @@ import java.util.*;
 
 /**
  * 游戏显示管理器
- * 负责处理所有游戏相关的显示输出
  */
 public class GameDisplayManager {
     private final GameStateManager stateManager;
