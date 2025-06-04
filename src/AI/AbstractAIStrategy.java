@@ -5,6 +5,7 @@ import PokerPatterns.basis.*;
 import PokerPatterns.generator.CardGroup;
 import Rules.Rule;
 import cards.Card;
+import cards.Rank;
 import java.util.*;
 import java.util.stream.Collectors;
 import Players.*;
@@ -181,15 +182,12 @@ public abstract class AbstractAIStrategy implements AIStrategy {
      * 出牌并显示结果
      */
     protected List<Card> playCardsAndDisplay(Player player, List<Integer> indices) {
-        List<Card> playedCards = player.playCards(indices);
-        System.out.println(player.getName() + "出牌：" +
-                playedCards.stream()
-                        .map(Card::getDisplayName)
-                        .collect(Collectors.joining(" ")));
-        return playedCards;
+        return player.playCards(indices);
     }
 
-    // 新增：识别废牌（无法组成任何牌型的单张牌）
+    /**
+     * 识别废牌（无法组成任何牌型的单张牌，但不包括A和2）
+     */
     protected List<Card> identifyWasteCards(List<Card> hand) {
         // 获取所有可能的牌型组合
         List<CardGroup> allPatterns = getAllPossiblePatternsForHand(hand);
@@ -202,13 +200,17 @@ public abstract class AbstractAIStrategy implements AIStrategy {
             }
         }
 
-        // 废牌是未被覆盖的牌
+        // 废牌是未被覆盖的牌，但不包括A和2
         return hand.stream()
-                .filter(card -> !coveredCards.contains(card))
+                .filter(card -> !coveredCards.contains(card) && 
+                              card.getRank() != Rank.ACE && 
+                              card.getRank() != Rank.TWO)
                 .collect(Collectors.toList());
     }
 
-    // 新增：为指定手牌获取所有可能的牌型组合
+    /**
+     * 为指定手牌获取所有可能的牌型组合
+     */
     private List<CardGroup> getAllPossiblePatternsForHand(List<Card> hand) {
         List<CardGroup> allPatterns = new ArrayList<>();
         for (PokerPattern pattern : PATTERNS) {

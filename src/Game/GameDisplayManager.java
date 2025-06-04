@@ -26,13 +26,11 @@ public class GameDisplayManager {
      * 显示玩家手牌
      * @param player 要显示手牌的玩家
      */
-    //2025.5.29这里本来是if (player == currentPlayer && player instanceof HumanPlayer)
-    //为了便于调试暂时改为if (player == currentPlayer)
     public void displayPlayerHand(Player player) {
         Player currentPlayer = stateManager.getCurrentPlayer();
 
         // 只有当前回合的玩家可以看到自己的详细手牌
-        if (player == currentPlayer) {
+        if  (player == currentPlayer && player instanceof HumanPlayer) {
             System.out.println(player.getName() + "的手牌：");
             List<Card> hand = player.getHand();
             for (int i = 0; i < hand.size(); i++) {
@@ -94,7 +92,7 @@ public class GameDisplayManager {
         int lastPlayerIndex = stateManager.getLastPlayerIndex();
         int currentPlayerIndex = stateManager.getCurrentPlayerIndex();
         
-        //TODO:250530这里只显示人类玩家可出的牌型用来做提示功能，删掉if就会也显示ai可出的牌
+        // 显示人类玩家可出的牌型
         if (player instanceof HumanPlayer){
             // 使用PlayablePatternUtil获取可出的牌型
             Map<String, List<CardGroup>> playablePatterns = 

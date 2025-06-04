@@ -40,87 +40,18 @@ public class Game {
     private GameScoreManager scoreManager;  // 添加结算管理器
     
     /**
-     * 创建单人模式游戏（1个玩家对战3个AI）
-     * @param playerName 玩家名称
-     * @param ruleType 规则类型
-     * @param aiStrategyType AI策略类型
+     * 使用建造者模式创建游戏实例
      */
-    public static Game createSinglePlayerGame(String playerName, int ruleType, AIStrategyType aiStrategyType) {
-        List<Player> players = new ArrayList<>();
-        HumanPlayer humanPlayer = new HumanPlayer(playerName);  // 人类玩家
-        players.add(humanPlayer);
-
-        //TODO:250531这里需要修改为动态调整，而不是开头就设置好
-        // 获取AI策略实例并设置规则
-        // 创建三个AI玩家，每个都有自己的策略实例
-        // 获取AI策略实例并设置规则
-        Rule rule = ruleType == RULE_NORTH ? NorthRule.getInstance() : SouthRule.getInstance();
-
-        // 创建三个AI玩家，每个都有自己的策略实例
-        for (int i = 1; i <= 3; i++) {
-            AIStrategy strategy = aiStrategyType.getStrategy();
-            strategy.setRule(rule);
-
-            // 如果是动态策略，设置人类玩家
-            if (strategy instanceof DynamicAIStrategy) {
-                ((DynamicAIStrategy) strategy).setHumanPlayer(humanPlayer);
-            }
-
-            // 如果是高级AI策略，传入玩家信息
-            if (strategy instanceof SmartAIStrategy3) {
-                SmartAIStrategy3 smartStrategy = (SmartAIStrategy3) strategy;
-                smartStrategy.setPlayer(humanPlayer);  // 设置人类玩家
-            }
-
-            players.add(new AIPlayer("AI玩家" + i, strategy));
-        }
-
-        return new Game(players, MODE_SINGLE_PLAYER, ruleType);
-    }
-
-    /**
-     * 创建多人联机模式游戏（4个人类玩家）
-     */
-    public static Game createMultiplayerGame(List<String> playerNames, int ruleType) {
-        if (playerNames.size() != 4) {
-            throw new IllegalArgumentException("多人模式需要恰好4个玩家");
-        }
-
-        List<Player> players = new ArrayList<>();
-        for (String name : playerNames) {
-            players.add(new HumanPlayer(name));  // 全部为人类玩家
-        }
-
-        return new Game(players, MODE_MULTIPLAYER, ruleType);
-    }
-    
-    /**
-     * 构造函数，创建游戏并初始化玩家
-     */
-    private Game(List<Player> players, int gameMode, int ruleType) {
-        // 初始化玩家列表
-        this.players = players;  // 直接使用传入的玩家列表
-        
-        this.gameMode = gameMode;
+    private Game(Builder builder) {
+        this.players = builder.players;
+        this.gameMode = builder.gameMode;
+        this.gameRule = builder.gameRule;
         this.deck = new Deck();
-        
-        // 根据规则类型设置游戏规则
-        switch (ruleType) {
-            case RULE_NORTH:
-                this.gameRule = NorthRule.getInstance();
-                break;
-            case RULE_SOUTH:
-                this.gameRule = SouthRule.getInstance();
-                break;
-            default:
-                throw new IllegalArgumentException("无效的规则类型：" + ruleType);
-        }
         
         this.stateManager = new GameStateManager(players);
         this.displayManager = new GameDisplayManager(stateManager, gameRule);
         this.playManager = new GamePlayManager(gameRule, stateManager);
         this.scoreManager = new GameScoreManager(players);
-
     }
     
     /**
@@ -138,82 +69,194 @@ public class Game {
     }
     
     /**
-     * 初始化游戏，包括洗牌和发牌
+     * 获取游戏规则
+     */
+    public Rule getGameRule() {
+        return gameRule;
+    }
+    
+    /**
+     * 获取状态管理器
+     */
+    public GameStateManager getStateManager() {
+        return stateManager;
+    }
+    
+    /**
+     * 获取游戏管理器
+     */
+    public GamePlayManager getPlayManager() {
+        return playManager;
+    }
+    
+    /**
+     * 获取分数管理器
+     */
+    public GameScoreManager getScoreManager() {
+        return scoreManager;
+    }
+
+    /**
+     * 初始化游戏
      */
     public void initGame() {
         // 清空所有玩家的手牌
-        for (Player player : players) {
-            player.clearHand();
-        }
+        players.forEach(Player::clearHand);
         
-        // 创建一副新牌并洗牌
+        // 创建新牌堆并洗牌
         this.deck = new Deck();
         deck.shuffle();
         
-        // 发牌（每人13张牌）
-        int cardsPerPlayer = 13;
-        int totalCardsNeeded = players.size() * cardsPerPlayer;
-        
-        // 检查牌堆容量是否足够
-        if (deck.cardsRemaining() < totalCardsNeeded) {
-            System.out.println("警告：牌堆容量不足（" + deck.cardsRemaining() + "张），标准游戏需要" + totalCardsNeeded + "张牌");
-            cardsPerPlayer = deck.cardsRemaining() / players.size();
-            System.out.println("调整为每位玩家发" + cardsPerPlayer + "张牌");
-        }
-        
         // 发牌
-        for (int i = 0; i < cardsPerPlayer; i++) {
-            for (Player player : players) {
-                if (deck.cardsRemaining() > 0) {
-                    player.drawCard(deck);
-                } else {
-                    System.out.println("牌堆已空，停止发牌");
-                    break;
-                }
-            }
-        }
+        dealCards();
         
-        // 对所有玩家的手牌进行排序
-        for (Player player : players) {
-            player.sortHand();
-        }
-
-        // 显示每个非AI玩家的手牌和可能的牌型
-        //for (int i = 0; i < players.size(); i++) {
-        //    if(players.get(i) instanceof HumanPlayer){
-        //      displayManager.displayPlayerHand(players.get(i));
-        //        displayManager.displayPossiblePatterns(players.get(i));
-        //    }
-        //}
-
-        // 更新AI策略中的玩家手牌信息
-        for (Player player : players) {
-            if (player instanceof AIPlayer) {
-                AIStrategy strategy = ((AIPlayer) player).getStrategy();
-                if (strategy instanceof SmartAIStrategy3 || strategy instanceof DynamicAIStrategy) {
-                    // 找到人类玩家
-                    Player humanPlayer = players.stream()
-                            .filter(p -> p instanceof HumanPlayer)
-                            .findFirst()
-                            .orElse(null);
-                    if (humanPlayer != null && strategy instanceof SmartAIStrategy3) {
-                        ((SmartAIStrategy3) strategy).setPlayer((HumanPlayer)humanPlayer);
-                    }else if(humanPlayer != null && strategy instanceof DynamicAIStrategy){
-                        DynamicAIStrategy dynamicStrategy = (DynamicAIStrategy) strategy;
-                        dynamicStrategy.setHumanPlayer((HumanPlayer) humanPlayer);
-                        dynamicStrategy.setStateManager(stateManager);
-                    }
-                }
-            }
-        }
-
         // 重置游戏状态
         stateManager.reset();
         
         // 设置持有方块三的玩家为第一个出牌的玩家
         int firstPlayerIndex = stateManager.selectFirstPlayer();
         stateManager.setCurrentPlayerIndex(firstPlayerIndex);
-        System.out.println(stateManager.getCurrentPlayer().getName() + "持有方块三，由他先出牌");
+    }
+    
+    /**
+     * 发牌逻辑
+     */
+    private void dealCards() {
+        int cardsPerPlayer = 13;
+        int totalCardsNeeded = players.size() * cardsPerPlayer;
+        
+        if (deck.cardsRemaining() < totalCardsNeeded) {
+            cardsPerPlayer = deck.cardsRemaining() / players.size();
+        }
+        
+        for (int i = 0; i < cardsPerPlayer; i++) {
+            for (Player player : players) {
+                if (deck.cardsRemaining() > 0) {
+                    player.drawCard(deck);
+                }
+            }
+        }
+        
+        // 对所有玩家的手牌进行排序
+        players.forEach(Player::sortHand);
+        
+        // 更新AI策略
+        updateAIStrategies();
+    }
+    
+    /**
+     * 更新AI策略
+     */
+    private void updateAIStrategies() {
+        Player humanPlayer = players.stream()
+            .filter(p -> p instanceof HumanPlayer)
+            .findFirst()
+            .orElse(null);
+            
+        if (humanPlayer != null) {
+            players.stream()
+                .filter(p -> p instanceof AIPlayer)
+                .map(p -> ((AIPlayer) p).getStrategy())
+                .forEach(strategy -> {
+                    if (strategy instanceof SmartAIStrategy) {
+                        ((SmartAIStrategy) strategy).setPlayer((HumanPlayer)humanPlayer);
+                    } else if (strategy instanceof DynamicAIStrategy) {
+                        DynamicAIStrategy dynamicStrategy = (DynamicAIStrategy) strategy;
+                        dynamicStrategy.setHumanPlayer((HumanPlayer) humanPlayer);
+                        dynamicStrategy.setStateManager(stateManager);
+                    }
+                });
+        }
+    }
+    
+    /**
+     * 游戏建造者类
+     */
+    public static class Builder {
+        private List<Player> players;
+        private int gameMode;
+        private Rule gameRule;
+        
+        public Builder() {
+            this.players = new ArrayList<>();
+        }
+        
+        public Builder setPlayers(List<Player> players) {
+            this.players = new ArrayList<>(players);
+            return this;
+        }
+        
+        public Builder setGameMode(int gameMode) {
+            this.gameMode = gameMode;
+            return this;
+        }
+        
+        public Builder setRuleType(int ruleType) {
+            switch (ruleType) {
+                case RULE_NORTH:
+                    this.gameRule = NorthRule.getInstance();
+                    break;
+                case RULE_SOUTH:
+                    this.gameRule = SouthRule.getInstance();
+                    break;
+                default:
+                    throw new IllegalArgumentException("无效的规则类型：" + ruleType);
+            }
+            return this;
+        }
+        
+        public Game build() {
+            validate();
+            return new Game(this);
+        }
+        
+        private void validate() {
+            if (players.isEmpty()) {
+                throw new IllegalStateException("玩家列表不能为空");
+            }
+            if (players.size() != 4) {
+                throw new IllegalStateException("游戏需要恰好4个玩家");
+            }
+            if (gameRule == null) {
+                throw new IllegalStateException("必须指定游戏规则");
+            }
+        }
+    }
+    
+    /**
+     * 创建单人模式游戏的工厂方法
+     */
+    public static Game createSinglePlayerGame(String playerName, int ruleType, AIStrategyType aiStrategyType) {
+        List<Player> players = new ArrayList<>();
+        players.add(new HumanPlayer(playerName));
+        
+        // 创建3个AI玩家
+        for (int i = 1; i <= 3; i++) {
+            AIStrategy strategy = aiStrategyType.getStrategy();
+            strategy.setRule(ruleType == RULE_NORTH ? NorthRule.getInstance() : SouthRule.getInstance());
+            players.add(new AIPlayer("AI-" + i, strategy));
+        }
+        
+        return new Builder()
+            .setPlayers(players)
+            .setGameMode(MODE_SINGLE_PLAYER)
+            .setRuleType(ruleType)
+            .build();
+    }
+    
+    /**
+     * 创建多人模式游戏的工厂方法
+     */
+    public static Game createMultiplayerGame(List<String> playerNames, int ruleType) {
+        List<Player> players = playerNames.stream()
+            .map(HumanPlayer::new)
+            .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+            
+        return new Builder()
+            .setPlayers(players)
+            .setGameMode(MODE_MULTIPLAYER)
+            .setRuleType(ruleType)
+            .build();
     }
     
     /**
@@ -276,6 +319,34 @@ public class Game {
                         }
                     }
                 } else {
+                    // 询问是否更换AI策略
+                    System.out.println("\n是否更换AI策略？(y/n)");
+                    input = new java.util.Scanner(System.in).nextLine().trim().toLowerCase();
+                    
+                    if (input.equals("y")) {
+                        // 显示AI策略选项
+                        AIStrategyType.displayOptions();
+                        System.out.println("请选择新的AI策略：");
+                        
+                        try {
+                            int strategyChoice = Integer.parseInt(new java.util.Scanner(System.in).nextLine().trim());
+                            AIStrategyType newStrategyType = AIStrategyType.fromId(strategyChoice);
+                            
+                            // 更新所有AI玩家的策略
+                            for (Player player : players) {
+                                if (player instanceof AIPlayer) {
+                                    AIStrategy newStrategy = newStrategyType.getStrategy();
+                                    newStrategy.setRule(gameRule);
+                                    ((AIPlayer) player).setStrategy(newStrategy);
+                                }
+                            }
+                            
+                            System.out.println("AI策略已更新！");
+                        } catch (Exception e) {
+                            System.out.println("输入无效，保持原有AI策略");
+                        }
+                    }
+                    
                     System.out.println("\n开始新的一局游戏！");
                 }
             } else {
@@ -332,5 +403,10 @@ public class Game {
         stateManager.reset();
     }
 
-
+    /**
+     * Get the game display manager
+     */
+    public GameDisplayManager getDisplayManager() {
+        return displayManager;
+    }
 }

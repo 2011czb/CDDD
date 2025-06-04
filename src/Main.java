@@ -1,13 +1,14 @@
 import Game.Game;
 import Network.NetworkManager;
 import Players.*;
-import AI.*;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+
+import AI.AIStrategyType;
 
 public class Main {
     public static void main(String[] args) {

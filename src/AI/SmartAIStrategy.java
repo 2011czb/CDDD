@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
  * 智能策略3
  * 通过分析玩家手牌来制定策略
  */
-public class SmartAIStrategy3 extends AbstractAIStrategy {
-    public static final SmartAIStrategy3 INSTANCE = new SmartAIStrategy3();
+public class SmartAIStrategy extends AbstractAIStrategy {
+    public static final SmartAIStrategy INSTANCE = new SmartAIStrategy();
     private HumanPlayer humanPlayer;
 
-    private SmartAIStrategy3() {}
+    private SmartAIStrategy() {}
 
     public void setPlayer(HumanPlayer player) {
         this.humanPlayer = player;
@@ -26,7 +26,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
 
     @Override
     public List<Card> playPossiblePattern(Player player) {
-        System.out.println("//250529 调试信息：AI需要出牌（上一手是自己出的）");
+        
         List<CardGroup> allPatterns = getAllPossiblePatterns(player);
         if (allPatterns.isEmpty()) {
             return Collections.emptyList();
@@ -38,7 +38,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
         // 新增：优先考虑出废牌
         List<Card> wasteCards = identifyWasteCards(player.getHand());
         if (!wasteCards.isEmpty()) {
-            System.out.println("//250529 调试信息：发现 " + wasteCards.size() + " 张废牌，优先处理");
+            
             // 尝试出最小的废牌（单张）
             Optional<CardGroup> wasteGroup = allPatterns.stream()
                     .filter(group -> {
@@ -48,11 +48,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
                     })
                     .min((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()));
 
-            if (wasteGroup.isPresent()) {
-                System.out.println("//250529 调试信息：选择出废牌: " +
-                        wasteGroup.get().getCards().stream()
-                                .map(Card::getDisplayName)
-                                .collect(Collectors.joining(" ")));
+            if (wasteGroup.isPresent()) { // 如果存在单张牌型，先出废牌
                 List<Integer> indices = getIndicesByCards(player.getHand(), wasteGroup.get().getCards());
                 return playCardsAndDisplay(player, indices);
             }
@@ -70,32 +66,26 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
 
     @Override
     public List<Card> tryToMatchLastPlay(Player player, List<Card> lastCards) {
-        System.out.println("//250529 调试信息：AI尝试跟牌，上一手牌是：" +
-                lastCards.stream().map(Card::getDisplayName).collect(Collectors.joining(" ")));
-
         List<CardGroup> allPatterns = getAllPossiblePatterns(player);
         PlayerHandAnalysis analysis = analyzePlayerHand();
         List<CardGroup> largerGroups = allPatterns.stream()
                 .filter(group -> isLargerThanLastPlay(group.getCards(), lastCards))
                 .collect(Collectors.toList());
 
-        if (largerGroups.isEmpty()) {
-            System.out.println("//250529 调试信息：AI没有找到能大过上一手牌的组合");
+        if (largerGroups.isEmpty()) {  // 没有找到能大过上一手牌的组合
             return Collections.emptyList();
         }
 
         // 新增：优先考虑出废牌（如果能大过上一手）
         List<Card> wasteCards = identifyWasteCards(player.getHand());
         if (!wasteCards.isEmpty() && lastCards.size() == 1) {
-            System.out.println("//250529 调试信息：发现 " + wasteCards.size() + " 张废牌，尝试用于跟牌");
             // 找出能大过上一手的最小废牌（单张）
             Optional<Card> smallestWaste = wasteCards.stream()
                     .filter(card -> currentRule.compareCards(Arrays.asList(card), lastCards) > 0)
                     .min(Comparator.comparingInt(Card::getIntValue));
 
             if (smallestWaste.isPresent()) {
-                List<Card> wasteCardList = Arrays.asList(smallestWaste.get());
-                System.out.println("//250529 调试信息：选择出废牌: " + smallestWaste.get().getDisplayName());
+                List<Card> wasteCardList = Arrays.asList(smallestWaste.get());  // 废牌列表
                 List<Integer> indices = getIndicesByCards(player.getHand(), wasteCardList);
                 return playCardsAndDisplay(player, indices);
             }
@@ -175,8 +165,7 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
     private CardGroup chooseFirstPlayStrategy(List<CardGroup> availableGroups,
                                               PlayerHandAnalysis analysis) {
         // 如果玩家没有大牌，AI可以用大牌抢到牌权
-        if (!analysis.hasBigCards) {
-            System.out.println("//250529 调试信息：玩家没有大牌（A或2），AI出大牌抢牌权");
+        if (!analysis.hasBigCards) { 
             return findMaxCardGroup(availableGroups);
         }
 
@@ -191,17 +180,14 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
                 boolean playerHasLargerFive = analysis.fiveCardPatterns.stream()
                         .anyMatch(group -> currentRule.compareCards(group.getCards(), aiLargestFive.getCards()) > 0);
 
-                if (!playerHasLargerFive) {
-                    System.out.println("//250529 调试信息：玩家没有比AI更大的五张牌型，AI出五张牌型");
+                if (!playerHasLargerFive) {  // 玩家没有比AI更大的五张牌型，AI出五张牌型
                     return findMinCardGroup(fiveCardGroups);
-                } else {
-                    System.out.println("//250529 调试信息：玩家有比AI更大的五张牌型，AI不出五张牌型");
+                } else {  // 玩家有比AI更大的五张牌型，AI不出五张牌型
                 }
             }
 
             // 如果玩家没有三张，优先出三张
             if (analysis.triples.isEmpty()) {
-                System.out.println("//250529 调试信息：玩家没有三张，AI优先出三张");
                 List<CardGroup> triples = availableGroups.stream()
                         .filter(group -> group.getCards().size() == 3)
                         .collect(Collectors.toList());
@@ -210,7 +196,6 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
 
             // 如果玩家没有对子，优先出对子
             if (analysis.pairs.isEmpty()) {
-                System.out.println("//250529 调试信息：玩家没有对子，AI优先出对子");
                 List<CardGroup> pairs = availableGroups.stream()
                         .filter(group -> group.getCards().size() == 2)
                         .collect(Collectors.toList());
@@ -220,19 +205,17 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
 
         // 新增：优先选择包含废牌的牌型
         List<Card> wasteCards = identifyWasteCards(humanPlayer.getHand());
-        if (!wasteCards.isEmpty()) {
-            System.out.println("//250529 调试信息：尝试选择包含废牌的牌型");
+        if (!wasteCards.isEmpty()) {  // 如果手牌中有废牌
             Optional<CardGroup> wasteGroup = availableGroups.stream()
                     .filter(group -> group.getCards().stream().anyMatch(wasteCards::contains))
                     .min((g1, g2) -> currentRule.compareCards(g1.getCards(), g2.getCards()));
 
-            if (wasteGroup.isPresent()) {
-                System.out.println("//250529 调试信息：选择包含废牌的牌型");
+            if (wasteGroup.isPresent()) {  // 如果存在包含废牌的牌型
                 return wasteGroup.get();
             }
         }
 
-        System.out.println("//250529 调试信息：使用默认策略，选择最小的牌组");
+        // 如果没有任何废牌，选择最小的牌组
         return findMinCardGroup(availableGroups);
     }
 
@@ -260,14 +243,12 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
 
         // 新增：优先选择包含废牌的牌型
         List<Card> wasteCards = identifyWasteCards(humanPlayer.getHand());
-        if (!wasteCards.isEmpty()) {
-            System.out.println("//250529 调试信息：尝试选择包含废牌的跟牌组合");
+        if (!wasteCards.isEmpty()) { // 如果手牌中有废牌
             Optional<CardGroup> wasteGroup = sortedGroups.stream()
                     .filter(group -> group.getCards().stream().anyMatch(wasteCards::contains))
                     .findFirst();
 
-            if (wasteGroup.isPresent()) {
-                System.out.println("//250529 调试信息：选择包含废牌的跟牌组合");
+            if (wasteGroup.isPresent()) { // 选择包含废牌的跟牌组合
                 return wasteGroup.get();
             }
         }
@@ -275,14 +256,16 @@ public class SmartAIStrategy3 extends AbstractAIStrategy {
         // 寻找最小的玩家无法压制的牌组
         for (CardGroup group : sortedGroups) {
             if (!playerCanBeat(analysis, group.getCards())) {
-                System.out.println("//250529 调试信息：选择玩家无法压制的牌组");
                 return group;
             }
         }
 
         // 玩家能压制所有牌组时，出最大牌组消耗对手
         CardGroup maxGroup = findMaxCardGroup(sortedGroups);
-        System.out.println("//250529 调试信息：玩家能压制所有牌组，选择最大牌组消耗对手");
+        if (maxGroup == null) {
+            return null;
+        }
+        
         return maxGroup;
     }
 

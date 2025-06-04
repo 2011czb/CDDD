@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 /**
  * 简单智能策略：出符合规则的最小牌
  */
-public class SmartAIStrategy1 extends AbstractAIStrategy {
-    public static final SmartAIStrategy1 INSTANCE = new SmartAIStrategy1();
+public class MinAIStrategy extends AbstractAIStrategy {
+    public static final MinAIStrategy INSTANCE = new MinAIStrategy();
 
-    private SmartAIStrategy1() {}
+    private MinAIStrategy() {}
 
     @Override
     public List<Card> playPossiblePattern(Player player) {

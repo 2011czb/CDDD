@@ -25,15 +25,6 @@ public class GameScoreManager {
         // 计算每个玩家的牌分
         Map<Player, Integer> cardScores = new HashMap<>();
         
-        // 250531 测试输出：显示每个玩家剩余的牌数
-        System.out.println("\n250531 测试输出 - 结算时各玩家剩余牌数：");
-        System.out.println("----------------------------------------");
-        for (Player player : players) {
-            int remainingCards = player.getHand().size();
-            System.out.printf("%s 剩余 %d 张牌\n", player.getName(), remainingCards);
-        }
-        System.out.println("----------------------------------------");
-        
         for (Player player : players) {
             int remainingCards = player.getHand().size();
             boolean hasSpade2 = hasSpade2(player.getHand());

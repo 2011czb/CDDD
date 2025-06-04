@@ -9,12 +9,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 中等智能策略：出符合规则的随机牌型
+ * 激进AI策略：出符合规则的最大牌型
  */
-public class SmartAIStrategy2 extends AbstractAIStrategy {
-    public static final SmartAIStrategy2 INSTANCE = new SmartAIStrategy2();
+public class MaxAIStrategy extends AbstractAIStrategy {
+    public static final MaxAIStrategy INSTANCE = new MaxAIStrategy();
 
-    private SmartAIStrategy2() {}
+    private MaxAIStrategy() {}
 
     @Override
     public List<Card> playPossiblePattern(Player player) {
