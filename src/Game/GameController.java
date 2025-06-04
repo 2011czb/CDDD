@@ -31,27 +31,27 @@ public class GameController {
     public GameResponse<Void> processPlayerPlay(List<Card> cards) {
         Player currentPlayer = stateManager.getCurrentPlayer();
         if (!(currentPlayer instanceof HumanPlayer)) {
-            // 显式指定 Void 类型
             return new GameResponse<Void>(false, "当前不是你的回合，请等待", null, false, null);
         }
 
-        // 验证并处理出牌
-        if (!playManager.isValidPlay(cards, stateManager.getLastPlayedCards(), currentPlayer)) {
-            // 显式指定 Void 类型
-            return new GameResponse<Void>(false, "出牌无效，请选择其他牌", null, false, null);
+        // 循环直到出牌有效
+        while (true) {
+            // 验证并处理出牌
+            if (!playManager.isValidPlay(cards, stateManager.getLastPlayedCards(), currentPlayer)) {
+                return new GameResponse<Void>(false, "出牌无效，请选择其他牌", null, false, null);
+            }
+
+            // 更新游戏状态
+            if (cards != null && !cards.isEmpty()) {
+                currentPlayer.removeCards(cards);
+                stateManager.updateState(currentPlayer, cards);
+            }
+
+            // 移动到下一个玩家
+            stateManager.nextPlayer();
+
+            return new GameResponse<Void>(true, "出牌成功", null, false, null);
         }
-
-        // 更新游戏状态
-        if (cards != null && !cards.isEmpty()) {
-            currentPlayer.removeCards(cards);
-            stateManager.updateState(currentPlayer, cards);
-        }
-
-        // 移动到下一个玩家
-        stateManager.nextPlayer();
-
-        // 显式指定 Void 类型
-        return new GameResponse<Void>(true, "出牌成功", null, false, null);
     }
 
     /**

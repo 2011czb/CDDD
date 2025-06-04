@@ -31,35 +31,42 @@ public class GamePlayManager {
      * 处理玩家出牌
      */
     public List<Card> handlePlayerPlay(Player player) {
-        try {
-            // 更新玩家状态
-            player.setLastPlayerIndex(stateManager.getLastPlayerIndex());
-            player.setCurrentPlayerIndex(stateManager.getCurrentPlayerIndex());
+        List<Card> playedCards = null;
+        boolean validPlay = false;
 
-            // 获取上一手牌
-            List<Card> lastCards = stateManager.getLastPlayedCards();
+        while (!validPlay) {
+            try {
+                // 更新玩家状态
+                player.setLastPlayerIndex(stateManager.getLastPlayerIndex());
+                player.setCurrentPlayerIndex(stateManager.getCurrentPlayerIndex());
 
-            // 玩家出牌
-            List<Card> playedCards = player.play(lastCards);
+                // 获取上一手牌
+                List<Card> lastCards = stateManager.getLastPlayedCards();
 
-            // 验证出牌
-            ValidationResult result = playValidator.validate(playedCards, lastCards, player, stateManager);
-            if (!result.isValid()) {
-                // 改为返回错误信息而不是抛出异常
-                System.err.println("出牌无效: " + result.getMessage());
-                return Collections.emptyList(); // 安全返回空列表表示过牌
+                // 玩家出牌
+                playedCards = player.play(lastCards);
+
+                // 验证出牌
+                ValidationResult result = playValidator.validate(playedCards, lastCards, player, stateManager);
+                if (!result.isValid()) {
+                    // 直接提示错误并重新请求出牌
+                    System.err.println("出牌无效: " + result.getMessage());
+                    continue; // 继续循环直到出牌有效
+                }
+
+                validPlay = true; // 标记为有效出牌
+
+            } catch (Exception e) {
+                System.err.println("处理玩家出牌时出错: " + e.getMessage());
             }
-
-            // 如果出牌合法，从玩家手牌中移除这些牌
-            if (playedCards != null && !playedCards.isEmpty()) {
-                player.removeCards(playedCards);
-            }
-
-            return playedCards;
-        } catch (Exception e) {
-            System.err.println("处理玩家出牌时出错: " + e.getMessage());
-            return Collections.emptyList(); // 安全返回空列表
         }
+
+        // 如果出牌合法，从玩家手牌中移除这些牌
+        if (playedCards != null && !playedCards.isEmpty()) {
+            player.removeCards(playedCards);
+        }
+
+        return playedCards;
     }
 
     /**
