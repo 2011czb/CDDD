@@ -9,6 +9,7 @@ C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Players\HumanPlayer.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Network\GameServer.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\AI\SmartAIStrategy3.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Network\GameClient.java
+C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Network\server\GameServerInterface.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\PokerPatterns\basis\Pair.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\PokerPatterns\basis\FullHouse.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Network\packets\EndTurn.java
@@ -39,6 +40,7 @@ C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\PokerPatterns\generator\Annot
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Network\model\NetworkPlayer.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Game\GamePlayManager.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\AI\SmartAIStrategy2.java
+C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Network\client\GameClientInterface.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\PokerPatterns\PokerPatternMatcher.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Network\packets\GameEnd.java
 C:\Users\DELL\Desktop\CDDD-aiachieve\src\main\java\Network\packets\PlayCard.java

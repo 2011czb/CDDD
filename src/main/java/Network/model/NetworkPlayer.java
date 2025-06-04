@@ -11,6 +11,8 @@ public class NetworkPlayer {
     private String name;
     private List<Card> hand;
     private boolean ready;
+    private boolean isHost;
+    private boolean isOnline;
 
     /**
      * 无参构造函数，用于Kryo序列化
@@ -20,6 +22,8 @@ public class NetworkPlayer {
         this.name = "";
         this.hand = new ArrayList<>();
         this.ready = false;
+        this.isHost = false;
+        this.isOnline = true;
     }
 
     public NetworkPlayer(String id, String name) {
@@ -27,6 +31,8 @@ public class NetworkPlayer {
         this.name = name;
         this.hand = new ArrayList<>();
         this.ready = false;
+        this.isHost = false;
+        this.isOnline = true;
     }
 
     public String getId() {
@@ -119,5 +125,21 @@ public class NetworkPlayer {
 
     public boolean isHandEmpty() {
         return hand.isEmpty();
+    }
+
+    public boolean isHost() {
+        return isHost;
+    }
+
+    public void setHost(boolean isHost) {
+        this.isHost = isHost;
+    }
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setOnline(boolean isOnline) {
+        this.isOnline = isOnline;
     }
 } 

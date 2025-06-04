@@ -1,0 +1,175 @@
+6月 04, 2025 10:25:33 下午 Network.GameServer setGameRule
+信息: 游戏规则已切换为: NORTH
+6月 04, 2025 10:25:33 下午 Network.GameServer start
+信息: 服务器已启动，监听端口: TCP=54555, UDP=54777
+6月 04, 2025 10:25:33 下午 Network.GameServer start
+信息: 6已加入，当前玩家数：1/4
+6月 04, 2025 10:25:33 下午 Network.GameServer start
+信息: 客户端连接地址：192.168.1.216
+6月 04, 2025 10:26:22 下午 Network.GameServer setGameRule
+信息: 游戏规则已切换为: NORTH
+6月 04, 2025 10:26:22 下午 Network.GameServer start
+信息: 服务器已启动，监听端口: TCP=54555, UDP=54777
+6月 04, 2025 10:26:22 下午 Network.GameServer start
+信息: 6已加入，当前玩家数：1/4
+6月 04, 2025 10:26:22 下午 Network.GameServer start
+信息: 客户端连接地址：192.168.1.216
+6月 04, 2025 10:33:32 下午 Network.GameServer$2 connected
+信息: 新的客户端连接：/192.168.1.216:61500
+6月 04, 2025 10:33:32 下午 Network.GameServer$2 connected
+信息: 当前玩家数：2/4
+6月 04, 2025 10:33:32 下午 Network.GameServer$2 connected
+信息: 新玩家ID：3dec2502-59f7-4225-93f8-3a6e915382cd
+6月 04, 2025 10:33:33 下午 Network.GameServer$2 received
+信息: 收到消息类型：PlayerAction
+6月 04, 2025 10:33:33 下午 Network.GameServer handlePlayerAction
+信息: 收到玩家动作: JOIN 来自: 未知
+6月 04, 2025 10:33:33 下午 Network.GameServer handlePlayerAction
+警告: 无法找到玩家连接: null
+6月 04, 2025 10:33:41 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:33:49 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:33:51 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:33:58 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:06 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:10 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:14 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:16 下午 Network.GameServer$2 connected
+信息: 新的客户端连接：/192.168.1.216:61547
+6月 04, 2025 10:34:16 下午 Network.GameServer$2 connected
+信息: 当前玩家数：3/4
+6月 04, 2025 10:34:16 下午 Network.GameServer$2 connected
+信息: 新玩家ID：ceb81298-faa8-4e92-8e2e-5075ba509331
+6月 04, 2025 10:34:17 下午 Network.GameServer$2 received
+信息: 收到消息类型：PlayerAction
+6月 04, 2025 10:34:17 下午 Network.GameServer handlePlayerAction
+信息: 收到玩家动作: JOIN 来自: 未知
+6月 04, 2025 10:34:17 下午 Network.GameServer handlePlayerAction
+警告: 无法找到玩家连接: null
+6月 04, 2025 10:34:22 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:25 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:29 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:30 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:33 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:35 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:38 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:41 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:47 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:48 下午 Network.GameServer$2 connected
+信息: 新的客户端连接：/192.168.1.216:61577
+6月 04, 2025 10:34:48 下午 Network.GameServer$2 connected
+信息: 当前玩家数：4/4
+6月 04, 2025 10:34:48 下午 Network.GameServer$2 connected
+信息: 新玩家ID：09f98bbd-b3bd-4daa-a6a8-f84d69e56276
+6月 04, 2025 10:34:49 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:49 下午 Network.GameServer$2 received
+信息: 收到消息类型：PlayerAction
+6月 04, 2025 10:34:49 下午 Network.GameServer handlePlayerAction
+信息: 收到玩家动作: JOIN 来自: 未知
+6月 04, 2025 10:34:49 下午 Network.GameServer handlePlayerAction
+警告: 无法找到玩家连接: null
+6月 04, 2025 10:34:50 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:54 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:55 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:57 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:34:58 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:35:03 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:35:05 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:35:06 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:35:07 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:35:08 下午 Network.GameServer$2 disconnected
+信息: 客户端断开连接：null
+6月 04, 2025 10:35:08 下午 Network.GameServer handleDisconnection
+信息: 玩家 玩家4 断开连接
+6月 04, 2025 10:35:08 下午 Network.GameServer broadcastGameState
+信息: === 广播游戏状态 ===
+6月 04, 2025 10:35:08 下午 Network.GameServer broadcastGameState
+信息: 游戏未开始，发送玩家数量
+6月 04, 2025 10:35:08 下午 Network.GameServer displayServerPlayerView
+信息: 
+=== 服务器玩家视图 ===
+当前玩家：6
+玩家列表：
+  6 (未准备) [当前玩家]
+  玩家2 (未准备)
+  玩家3 (未准备)
+
+你的手牌：
+
+
+=== 可出的牌型 ===
+没有包含方块三的牌型
+===================
+
+6月 04, 2025 10:35:08 下午 Network.GameServer broadcastGameState
+信息: 已发送状态更新给玩家：玩家2 (ID: 3dec2502-59f7-4225-93f8-3a6e915382cd, 更新ID: 8f36dba0-0afa-4b68-b89d-3a0218fc439a)
+6月 04, 2025 10:35:08 下午 Network.GameServer broadcastGameState
+信息: 已发送状态更新给玩家：玩家3 (ID: ceb81298-faa8-4e92-8e2e-5075ba509331, 更新ID: 8e3c2f39-5abc-4693-a3d8-5340311b31da)
+6月 04, 2025 10:35:08 下午 Network.GameServer broadcastGameState
+信息: === 广播游戏状态结束 ===
+
+6月 04, 2025 10:35:08 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:35:11 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:44:53 下午 Network.GameServer setGameRule
+信息: 游戏规则已切换为: NORTH
+6月 04, 2025 10:44:54 下午 Network.GameServer start
+信息: 服务器已启动，监听端口: TCP=54555, UDP=54777
+6月 04, 2025 10:44:54 下午 Network.GameServer start
+信息: 6已加入，当前玩家数：1/4
+6月 04, 2025 10:44:54 下午 Network.GameServer start
+信息: 客户端连接地址：192.168.1.216
+6月 04, 2025 10:45:15 下午 Network.GameServer$2 connected
+信息: 新的客户端连接：/192.168.1.216:62467
+6月 04, 2025 10:45:15 下午 Network.GameServer$2 connected
+信息: 当前玩家数：2/4
+6月 04, 2025 10:45:15 下午 Network.GameServer$2 connected
+信息: 新玩家ID：e078f1ed-7267-4d5e-8364-4b782f0add3e
+6月 04, 2025 10:45:15 下午 Network.GameServer$2 received
+信息: 收到消息类型：GameStateUpdate
+6月 04, 2025 10:45:16 下午 Network.GameServer$2 received
+信息: 收到消息类型：PlayerAction
+6月 04, 2025 10:45:16 下午 Network.GameServer handlePlayerAction
+信息: 收到玩家动作: JOIN 来自: 未知
+6月 04, 2025 10:45:16 下午 Network.GameServer handlePlayerAction
+警告: 无法找到未关联玩家的连接，无法处理JOIN请求
+6月 04, 2025 10:45:24 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:45:32 下午 Network.GameServer$2 received
+信息: 收到消息类型：KeepAlive
+6月 04, 2025 10:55:36 下午 Network.GameServer setGameRule
+信息: 游戏规则已切换为: NORTH
+6月 04, 2025 10:55:37 下午 Network.GameServer start
+信息: 服务器已启动，监听端口: TCP=54555, UDP=54777
+6月 04, 2025 10:55:37 下午 Network.GameServer start
+信息: 6已加入，当前玩家数：1/4
+6月 04, 2025 10:55:37 下午 Network.GameServer start
+信息: 客户端连接地址：192.168.1.216
+6月 04, 2025 10:55:58 下午 Network.GameServer$2 connected
+信息: 新的客户端连接：/192.168.1.216:63405

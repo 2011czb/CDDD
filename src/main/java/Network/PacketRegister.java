@@ -47,29 +47,42 @@ public class PacketRegister {
         kryo.register(Collections.EMPTY_MAP.getClass());
         kryo.register(Collections.EMPTY_SET.getClass());
 
-        Class<?>[] classes = {
-            GameStateUpdate.class,
-            PlayerAction.class,
-            GameStart.class,
-            GameEnd.class,
-            NetworkPlayer.class,
-            NetworkCard.class,
-            Card.class,
-            Rank.class,
-            Suit.class,
-            ActionType.class,
-            NetworkPlayer[].class,
-            NetworkCard[].class,
-            NetworkCard[][].class,
-            java.util.Map.class,
-            Heartbeat.class,
-            EndTurn.class,
-            ServerInfo.class
-        };
-
-        for (Class<?> c : classes) {
-            kryo.register(c);
-        }
+        // 注册基本类型
+        kryo.register(String.class);
+        kryo.register(List.class);
+        kryo.register(Integer.class);
+        kryo.register(Boolean.class);
+        kryo.register(Long.class);
+        kryo.register(Double.class);
+        kryo.register(Float.class);
+        
+        // 注册数组类型
+        kryo.register(String[].class);
+        kryo.register(Integer[].class);
+        kryo.register(Boolean[].class);
+        kryo.register(Long[].class);
+        kryo.register(Double[].class);
+        kryo.register(Float[].class);
+        kryo.register(Object[].class);
+        
+        // 注册游戏相关类
+        kryo.register(NetworkPlayer.class);
+        kryo.register(NetworkCard.class);
+        kryo.register(Card.class);
+        kryo.register(Suit.class);
+        kryo.register(Rank.class);
+        
+        // 注册网络包类
+        kryo.register(PlayerAction.class);
+        kryo.register(ActionType.class);
+        kryo.register(GameStart.class);
+        kryo.register(GameEnd.class);
+        kryo.register(GameStateUpdate.class);
+        kryo.register(EndTurn.class);
+        kryo.register(Heartbeat.class);
+        kryo.register(KeepAlive.class);
+        kryo.register(PlayerJoin.class);
+        kryo.register(PlayerIdAssignment.class);
 
         // 牌型相关
         kryo.register(PokerPatterns.basis.PokerPattern.class);

@@ -7,6 +7,7 @@ import Network.model.NetworkCard;
 import Network.model.NetworkPlayer;
 import Network.packets.*;
 import Network.PacketRegister;
+import Network.client.GameClientInterface;
 import cards.Card;
 import cards.Rank;
 import cards.Suit;
@@ -30,7 +31,7 @@ import PokerPatterns.generator.*;
 import Rules.NorthRule;
 import Rules.SouthRule;
 
-public class GameClient {
+public class GameClient implements GameClientInterface {
     private static final int TCP_PORT = 54555;
     private static final int UDP_PORT = 54777;
     private static final int CONNECTION_TIMEOUT = 5000;
@@ -61,6 +62,11 @@ public class GameClient {
         this.pendingUpdates = new ConcurrentHashMap<>();
         this.currentRule = NorthRule.getInstance();  // 默认使用北方规则
         this.ruleManager = RuleManager.getInstance();
+        
+        // 创建本地玩家对象，使用临时ID
+        String tempId = java.util.UUID.randomUUID().toString();
+        this.localPlayer = new NetworkPlayer(tempId, "");
+        this.localPlayer.setTempId(tempId);
         
         registerPackets();
         setupClient();
@@ -107,9 +113,13 @@ public class GameClient {
         if (!isConnected()) {
             throw new IllegalStateException("未连接到服务器");
         }
-        PlayerAction action = new PlayerAction(null, ActionType.JOIN);
-        action.setPlayerName(playerName);
-        client.sendTCP(action);
+        
+        // 设置本地玩家名称
+        localPlayer.setName(playerName);
+        
+        // 发送PlayerJoin消息，包含临时ID和玩家名称
+        PlayerJoin joinPacket = new PlayerJoin(localPlayer.getTempId(), playerName);
+        client.sendTCP(joinPacket);
     }
 
     public void disconnect() {
@@ -161,6 +171,10 @@ public class GameClient {
             handleGameEnd((GameEnd) object);
         } else if (object instanceof Heartbeat) {
             handleHeartbeat();
+        } else if (object instanceof GameStateUpdate) {
+            handleGameStateUpdate((GameStateUpdate) object);
+        } else if (object instanceof PlayerIdAssignment) {
+            handlePlayerIdAssignment((PlayerIdAssignment) object);
         }
     }
 
@@ -200,6 +214,55 @@ public class GameClient {
         lastHeartbeatTime = System.currentTimeMillis();
     }
 
+    private void handleGameStateUpdate(GameStateUpdate update) {
+        // 检查是否是发给本地玩家的更新
+        if (update.getTargetPlayerId() != null) {
+            // 初始化本地玩家
+            if (localPlayer == null) {
+                for (NetworkPlayer player : update.getPlayers()) {
+                    if (player.getId().equals(update.getTargetPlayerId())) {
+                        localPlayer = player;
+                        break;
+                    }
+                }
+            }
+            
+            // 更新当前玩家ID
+            currentPlayerId = update.getCurrentPlayerId();
+            
+            // 更新最后出的牌
+            if (update.getLastPlayedCards() != null) {
+                lastPlayedCards = NetworkCard.toCardList(update.getLastPlayedCards());
+            }
+            
+            // 如果包含手牌信息，更新本地玩家手牌
+            if (update.getPlayerHand() != null && localPlayer != null) {
+                List<Card> hand = NetworkCard.toCardList(update.getPlayerHand());
+                localPlayer.setHand(hand);
+            }
+            
+            // 发送确认包
+            GameStateUpdate confirmation = new GameStateUpdate();
+            confirmation.setConfirmation(true);
+            confirmation.setUpdateId(update.getUpdateId());
+            client.sendTCP(confirmation);
+        }
+    }
+
+    private void handlePlayerIdAssignment(PlayerIdAssignment idAssignment) {
+        // 检查是否是发给本地玩家的ID分配
+        if (idAssignment.getClientId().equals(localPlayer.getTempId())) {
+            // 更新本地玩家ID
+            localPlayer.setId(idAssignment.getServerId());
+            logger.info("收到服务器分配的ID: " + idAssignment.getServerId());
+            
+            // 发送PlayerAction.JOIN消息，使用新分配的ID
+            PlayerAction action = new PlayerAction(localPlayer.getId(), ActionType.JOIN);
+            action.setPlayerName(localPlayer.getName());
+            client.sendTCP(action);
+        }
+    }
+
     private void notifyStateListeners(GameEvent event) {
         for (GameStateListener listener : stateListeners) {
             listener.onGameStateChanged(event);
@@ -220,6 +283,18 @@ public class GameClient {
         List<NetworkCard> networkCards = NetworkCard.fromCardList(cards);
         PlayerAction action = new PlayerAction(localPlayer.getId(), ActionType.PLAY_CARD);
         action.setPlayedCards(networkCards);
+        client.sendTCP(action);
+    }
+    
+    /**
+     * 发送过牌请求到服务器
+     */
+    public void pass() {
+        if (!isConnected() || !isGameStarted() || isGameEnded()) {
+            return;
+        }
+        
+        PlayerAction action = new PlayerAction(localPlayer.getId(), ActionType.PASS);
         client.sendTCP(action);
     }
     
@@ -269,15 +344,5 @@ public class GameClient {
         return localPlayer;
     }
 
-    public enum GameEvent {
-        CONNECTED,
-        DISCONNECTED,
-        GAME_STARTED,
-        CARD_PLAYED,
-        GAME_ENDED
-    }
-
-    public interface GameStateListener {
-        void onGameStateChanged(GameEvent event);
-    }
+    // 使用接口中定义的GameEvent枚举和GameStateListener接口
 } 

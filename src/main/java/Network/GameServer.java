@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.*;
 import Network.PacketRegister;
+import Network.server.GameServerInterface;
 import cards.Card;
 import cards.Rank;
 import cards.Suit;
@@ -23,8 +24,10 @@ import PokerPatterns.PlayablePatternUtil;
 import PokerPatterns.basis.*;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import scoring.ScoreCalculator;
+import scoring.GameSettlementManager;
 
-public class GameServer {
+public class GameServer implements GameServerInterface {
     private static final int TCP_PORT = 54555;
     private static final int UDP_PORT = 54777;
     private static final int DISCOVERY_PORT = 54556;
@@ -52,6 +55,9 @@ public class GameServer {
     private FileHandler fileHandler;
     private ConsoleHandler consoleHandler;
     private RuleManager ruleManager;
+    
+    // 添加服务器状态监听器支持
+    private final List<ServerStateListener> stateListeners = new ArrayList<>();
 
     public GameServer() {
         server = new Server();
@@ -185,45 +191,99 @@ public class GameServer {
         server.addListener(new Listener() {
             @Override
             public void connected(Connection connection) {
-                logger.info("新的客户端连接：" + connection.getRemoteAddressTCP());
-                // 创建新玩家并加入游戏
-                String playerId = java.util.UUID.randomUUID().toString();
-                String playerName = "玩家" + (playerList.size() + 1);
-                NetworkPlayer player = new NetworkPlayer(playerId, playerName);
-                connectedPlayers.put(connection, player);
-                playerList.add(player);
-                logger.info("当前玩家数：" + playerList.size() + "/4");
-                logger.info("新玩家ID：" + playerId);
+                if (connection == null) {
+                    logger.warning("接收到空连接对象");
+                    return;
+                }
                 
-                // 发送当前游戏状态给新连接的玩家
-                GameStateUpdate update = new GameStateUpdate(playerList, currentPlayer != null ? currentPlayer.getId() : null);
-                update.setTargetPlayerId(playerId);
-                connection.sendTCP(update);
+                try {
+                    logger.info("新的客户端连接：" + connection.getRemoteAddressTCP());
+                    // 不在连接时就创建玩家，等待JOIN消息
+                    // 只记录连接，不创建玩家对象
+                    connectedPlayers.put(connection, null);
+                } catch (Exception e) {
+                    logger.severe("处理客户端连接时发生错误: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void received(Connection connection, Object object) {
-                logger.info("收到消息类型：" + object.getClass().getSimpleName());
-                if (object instanceof GameStateUpdate) {
-                    GameStateUpdate update = (GameStateUpdate) object;
-                    if (update.isConfirmation()) {
-                        // 处理确认包
-                        pendingUpdates.remove(update.getUpdateId());
-                        return;
+                if (connection == null || object == null) {
+                    logger.warning("接收到空连接对象或空消息");
+                    return;
+                }
+                
+                try {
+                    logger.info("收到消息类型：" + object.getClass().getSimpleName());
+                    if (object instanceof GameStateUpdate) {
+                        GameStateUpdate update = (GameStateUpdate) object;
+                        if (update.isConfirmation()) {
+                            // 处理确认包
+                            pendingUpdates.remove(update.getUpdateId());
+                            return;
+                        }
+                    } else if (object instanceof PlayerJoin) {
+                        // 处理玩家加入请求，分配ID
+                        handlePlayerJoinRequest(connection, (PlayerJoin) object);
+                    } else if (object instanceof PlayerAction) {
+                        // 将连接对象添加到PlayerAction中，以便后续处理
+                        PlayerAction action = (PlayerAction) object;
+                        action.setConnection(connection);
+                        handlePlayerAction(action);
+                    } else if (object instanceof EndTurn) {
+                        handleEndTurn(connection, (EndTurn) object);
                     }
-                } else if (object instanceof PlayerAction) {
-                    handlePlayerAction((PlayerAction) object);
-                } else if (object instanceof EndTurn) {
-                    handleEndTurn(connection, (EndTurn) object);
+                } catch (Exception e) {
+                    logger.severe("处理消息时发生错误: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
 
             @Override
             public void disconnected(Connection connection) {
-                logger.info("客户端断开连接：" + connection.getRemoteAddressTCP());
-                handleDisconnection(connection);
+                if (connection == null) {
+                    logger.warning("接收到空连接对象断开");
+                    return;
+                }
+                
+                try {
+                    logger.info("客户端断开连接：" + connection.getRemoteAddressTCP());
+                    handleDisconnection(connection);
+                } catch (Exception e) {
+                    logger.severe("处理客户端断开时发生错误: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
         });
+    }
+
+    /**
+     * 处理玩家加入请求，分配ID
+     * @param connection 客户端连接
+     * @param joinRequest 加入请求
+     */
+    private void handlePlayerJoinRequest(Connection connection, PlayerJoin joinRequest) {
+        String clientId = joinRequest.getClientId();
+        String playerName = joinRequest.getPlayerName();
+        
+        logger.info("收到玩家加入请求: 临时ID=" + clientId + ", 名称=" + playerName);
+        
+        // 生成服务器ID
+        String serverId = java.util.UUID.randomUUID().toString();
+        
+        // 创建玩家对象
+        NetworkPlayer player = new NetworkPlayer(serverId, playerName);
+        player.setTempId(clientId); // 保存客户端临时ID
+        
+        // 发送ID分配消息
+        PlayerIdAssignment idAssignment = new PlayerIdAssignment(clientId, serverId);
+        connection.sendTCP(idAssignment);
+        
+        logger.info("已分配ID给玩家: 临时ID=" + clientId + ", 服务器ID=" + serverId);
+        
+        // 将玩家对象与连接关联
+        connectedPlayers.put(connection, player);
     }
 
     public void start() throws IOException {
@@ -268,38 +328,76 @@ public class GameServer {
     }
 
     private void handlePlayerAction(PlayerAction action) {
-        NetworkPlayer player = getPlayerByConnection(action.getConnection());
-        if (player == null) return;
-
+        if (action == null) return;
+        
+        logger.info("收到玩家动作: " + action.getActionType() + 
+                   " 来自: " + (action.getPlayerId() != null ? action.getPlayerId() : "未知"));
+        
+        // 根据动作类型处理
         switch (action.getActionType()) {
-            case PLAY_CARD:
-                List<Card> playedCards = action.getPlayedCards().stream()
-                    .map(NetworkCard::getCard)
-                    .collect(Collectors.toList());
-                if (isValidPlay(player, playedCards, ActionType.PLAY_CARD)) {
-                    handlePlayCard(player, action.getPlayedCards());
+            case JOIN:
+                // 如果是JOIN操作，直接使用action中的connection处理
+                Connection connection = action.getConnection();
+                if (connection != null) {
+                    handleJoinGame(connection, action);
+                } else {
+                    // 如果没有connection，尝试通过playerId查找
+                    if (action.getPlayerId() != null) {
+                        connection = getConnectionByPlayerId(action.getPlayerId());
+                        if (connection != null) {
+                            handleJoinGame(connection, action);
+                        } else {
+                            logger.warning("无法找到玩家连接: " + action.getPlayerId());
+                        }
+                    } else {
+                        // 尝试查找未关联玩家的连接
+                        Connection[] connections = server.getConnections();
+                        for (Connection conn : connections) {
+                            NetworkPlayer existingPlayer = connectedPlayers.get(conn);
+                            if (existingPlayer == null) {
+                                handleJoinGame(conn, action);
+                                return;
+                            }
+                        }
+                        logger.warning("无法找到未关联玩家的连接，无法处理JOIN请求");
+                    }
                 }
                 break;
+                
+            case PLAY_CARD:
+                NetworkPlayer player = getPlayerById(action.getPlayerId());
+                if (player != null) {
+                    handlePlayCard(player, action.getPlayedCards());
+                    // 通知监听器有玩家出牌
+                    notifyStateListeners(ServerEvent.PLAYER_ACTION, action);
+                }
+                break;
+                
             case PASS:
-                handlePass(player);
+                player = getPlayerById(action.getPlayerId());
+                if (player != null) {
+                    handlePass(player);
+                    // 通知监听器有玩家过牌
+                    notifyStateListeners(ServerEvent.PLAYER_ACTION, action);
+                }
                 break;
-            case END_TURN:
-                handleEndTurn(action.getConnection(), new EndTurn());
-                break;
+                
             case READY:
-                handleReady(player);
+                player = getPlayerById(action.getPlayerId());
+                if (player != null) {
+                    handleReady(player);
+                }
                 break;
-            case UNREADY:
-                handleUnready(player);
+                
+            case LEAVE:
+                player = getPlayerById(action.getPlayerId());
+                if (player != null) {
+                    handleLeaveGame(player);
+                }
                 break;
-            case JOIN:
-                handleJoinGame(action.getConnection(), action);
-                break;
-            case LEAVE_GAME:
-                handleLeaveGame(player);
-                break;
+                
             default:
-                logger.warning("未知的动作类型：" + action.getActionType());
+                logger.warning("未知的动作类型: " + action.getActionType());
                 break;
         }
     }
@@ -419,60 +517,62 @@ public class GameServer {
     }
 
     private void handleJoinGame(Connection connection, PlayerAction action) {
-        logger.info("\n=== 处理玩家加入请求 ===");
-        logger.info("收到玩家加入请求：" + action.getPlayerName());
-        logger.info("客户端临时ID：" + action.getPlayerId());
-        logger.info("连接ID：" + connection.getID());
+        if (gameStarted) {
+            // 游戏已经开始，不允许新玩家加入
+            logger.warning("游戏已开始，拒绝玩家加入请求: " + action.getPlayerName());
+            return;
+        }
         
-        // 检查玩家是否已存在
-        NetworkPlayer existingPlayer = connectedPlayers.get(connection);
-        if (existingPlayer != null) {
-            logger.info("玩家已存在，更新信息");
-            logger.info("玩家ID分配情况：");
-            logger.info("  玩家名称：" + action.getPlayerName());
-            logger.info("  客户端临时ID：" + action.getPlayerId());
-            logger.info("  服务器分配ID：" + existingPlayer.getId());
-            logger.info("  连接ID：" + connection.getID());
+        NetworkPlayer player = connectedPlayers.get(connection);
+        if (player == null) {
+            // 这种情况不应该发生，因为玩家应该已经通过PlayerJoin消息创建
+            logger.warning("收到JOIN请求，但没有找到对应的玩家对象，可能是跳过了PlayerJoin步骤");
+            return;
+        }
+        
+        // 检查玩家是否已经在玩家列表中
+        boolean playerExists = playerList.stream().anyMatch(p -> p.getId().equals(player.getId()));
+        
+        if (!playerExists) {
+            // 将玩家添加到玩家列表
+            playerList.add(player);
             
-            // 更新玩家名称
-            existingPlayer.setName(action.getPlayerName());
+            logger.info("玩家加入游戏: " + player.getName() + " (ID: " + player.getId() + ")");
+            logger.info("当前玩家数: " + playerList.size() + "/4");
             
-            // 发送确认消息给客户端，使用临时ID
+            // 通知所有玩家有新玩家加入
+            broadcastPlayerList();
+            
+            // 通知监听器有新玩家加入
+            notifyStateListeners(ServerEvent.PLAYER_JOINED, player);
+            
+            // 如果是第一个玩家，设置为房主
+            if (playerList.size() == 1) {
+                player.setHost(true);
+                logger.info("设置房主: " + player.getName());
+            }
+            
+            // 发送当前游戏状态给新加入的玩家
             GameStateUpdate update = new GameStateUpdate(playerList, currentPlayer != null ? currentPlayer.getId() : null);
-            update.setTargetPlayerId(action.getPlayerId());  // 使用临时ID
-            update.setPlayerCount(playerList.size());
-            
-            // 确保玩家列表包含正确的玩家信息
-            boolean found = false;
-            for (NetworkPlayer p : update.getPlayers()) {
-                if (p.getId().equals(existingPlayer.getId())) {
-                    p.setName(action.getPlayerName());
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                update.getPlayers().add(existingPlayer);
-            }
-            
+            update.setTargetPlayerId(player.getId());
             connection.sendTCP(update);
-            logger.info("已发送确认消息给玩家：" + action.getPlayerName());
-            logger.info("使用临时ID：" + action.getPlayerId());
-            logger.info("服务器分配ID：" + existingPlayer.getId());
-            logger.info("当前玩家数：" + playerList.size() + "/4");
             
-            // 如果玩家数量达到4人，自动开始游戏
-            if (playerList.size() == 4) {
-                logger.info("玩家数量已满，自动开始游戏");
+            // 如果玩家数量达到要求，可以开始游戏
+            if (canStartGame()) {
+                logger.info("玩家数量已满，可以开始游戏");
                 startGame();
-            } else {
-                // 广播游戏状态给所有玩家
-                broadcastGameState();
             }
         } else {
-            logger.warning("警告：找不到玩家连接信息");
+            // 玩家已存在，可能是重连
+            logger.info("玩家重新连接: " + player.getName() + " (ID: " + player.getId() + ")");
+            player.setOnline(true);
+            broadcastPlayerList();
+            
+            // 发送当前游戏状态给重连的玩家
+            GameStateUpdate update = new GameStateUpdate(playerList, currentPlayer != null ? currentPlayer.getId() : null);
+            update.setTargetPlayerId(player.getId());
+            connection.sendTCP(update);
         }
-        logger.info("=== 处理玩家加入请求结束 ===\n");
     }
 
     private void handleLeaveGame(NetworkPlayer player) {
@@ -516,69 +616,38 @@ public class GameServer {
                playerList.stream().allMatch(NetworkPlayer::isReady);
     }
 
-    private void startGame() {
+    @Override
+    public void startGame() {
         if (gameStarted) {
+            logger.warning("游戏已经开始，忽略startGame调用");
             return;
         }
         
-        logger.info("\n=== 开始游戏 ===");
+        if (playerList.size() < 2) {
+            logger.warning("玩家数量不足，无法开始游戏");
+            return;
+        }
+        
+        logger.info("开始游戏...");
         gameStarted = true;
-        currentPlayer = playerList.get(0);
-        lastPlayedCards = null;
-        lastPlayerIndex = -1;
-
-        // 初始化牌组并给每个玩家发牌
-        deck = new Deck();
-        deck.shuffle();
+        gameRunning.set(true);
         
-        // 检查牌堆容量
-        int cardsPerPlayer = 13;
-        int totalCardsNeeded = playerList.size() * cardsPerPlayer;
+        // 初始化游戏状态
+        initializeGame();
         
-        if (deck.cardsRemaining() < totalCardsNeeded) {
-            logger.warning("警告：牌堆容量不足（" + deck.cardsRemaining() + "张），标准游戏需要" + totalCardsNeeded + "张牌");
-            cardsPerPlayer = deck.cardsRemaining() / playerList.size();
-            logger.warning("调整为每位玩家发" + cardsPerPlayer + "张牌");
-        }
+        // 广播游戏开始消息
+        broadcastGameStart();
         
-        // 给每个玩家发牌
-        List<NetworkPlayer> playersCopy = new ArrayList<>(playerList);
-        for (NetworkPlayer player : playersCopy) {
-            List<Card> hand = new ArrayList<>();
-            for (int i = 0; i < cardsPerPlayer; i++) {
-                if (deck.cardsRemaining() > 0) {
-                    Optional<Card> cardOpt = deck.dealCard();
-                    if (cardOpt.isPresent()) {
-                        hand.add(cardOpt.get());
-                    }
-                }
-            }
-            
-            // 对手牌进行排序
-            Collections.sort(hand, (card1, card2) -> card2.getWeight() - card1.getWeight());
-            player.setHand(hand);
-            
-            // 如果是服务器玩家（房主），直接显示手牌
-            if (player.getName().equals(hostName)) {
-                logger.info("\n=== 服务器玩家视图 ===");
-                logger.info("你的手牌：");
-                for (Card card : hand) {
-                    logger.info(card.getDisplayName());
-                }
-                logger.info("===================\n");
-            } else {
-                logger.info("玩家 " + player.getName() + " 获得 " + hand.size() + " 张牌");
-            }
-        }
-
-        // 广播游戏开始
-        GameStart startPacket = new GameStart(playersCopy, currentPlayer, currentRule.getName());
-        server.sendToAllTCP(startPacket);
-        logger.info("游戏开始！当前玩家：" + currentPlayer.getName());
-
-        // 广播游戏状态
-        broadcastGameState();
-        logger.info("=== 开始游戏结束 ===\n");
+        // 通知监听器游戏已开始
+        notifyStateListeners(ServerEvent.GAME_STARTED, null);
+        
+        // 广播初始游戏状态
+        broadcastGameStateUpdate();
+        
+        // 开始心跳检测
+        startHeartbeat();
+        
+        logger.info("游戏已开始，玩家数：" + playerList.size());
     }
 
     private Connection getConnectionByPlayerId(String playerId) {
@@ -690,6 +759,16 @@ public class GameServer {
         logger.info("=== 广播游戏状态结束 ===\n");
     }
 
+    private NetworkPlayer getPlayerById(String playerId) {
+        if (playerId == null) return null;
+        for (NetworkPlayer player : playerList) {
+            if (playerId.equals(player.getId())) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     private NetworkPlayer getPlayerByConnection(Connection connection) {
         return connectedPlayers.get(connection);
     }
@@ -770,9 +849,47 @@ public class GameServer {
     }
 
     private void endGame(NetworkPlayer winner, String reason) {
-        GameEnd gameEnd = new GameEnd(winner, reason);
+        if (!gameStarted) return;
+        
+        logger.info("游戏结束！胜利者：" + (winner != null ? winner.getName() : "无") + 
+                   "，原因：" + reason);
+        
+        // 创建游戏结束数据包
+        GameEnd gameEnd = new GameEnd();
+        if (winner != null) {
+            gameEnd.setWinnerId(winner.getId());
+            gameEnd.setWinnerName(winner.getName());
+        }
+        gameEnd.setReason(reason);
+        
+        // 计算得分
+        Map<String, Integer> scores = new HashMap<>();
+        for (NetworkPlayer player : playerList) {
+            int score = calculateScore(player);
+            scores.put(player.getId(), score);
+        }
+        gameEnd.setScores(scores);
+        
+        // 广播游戏结束消息
         server.sendToAllTCP(gameEnd);
+        
+        // 通知监听器游戏已结束
+        notifyStateListeners(ServerEvent.GAME_ENDED, gameEnd);
+        
+        // 重置游戏状态
         gameStarted = false;
+        gameRunning.set(false);
+        lastPlayedCards = null;
+        currentPlayer = null;
+        
+        logger.info("游戏已重置，等待新游戏开始");
+    }
+
+    private int calculateScore(NetworkPlayer player) {
+        // 使用ScoreCalculator来计算积分
+        List<Card> hand = playerHands.getOrDefault(player.getId(), new ArrayList<>());
+        boolean hasSpade2 = ScoreCalculator.hasSpade2(hand);
+        return ScoreCalculator.calculateCardScore(hand.size(), hasSpade2);
     }
 
     private void updateGameState() {
@@ -1059,5 +1176,56 @@ public class GameServer {
                 player.addCard(NetworkCard.fromCard(card));
             }
         }
+    }
+
+    @Override
+    public void addStateListener(ServerStateListener listener) {
+        if (listener != null) {
+            stateListeners.add(listener);
+        }
+    }
+    
+    @Override
+    public void removeStateListener(ServerStateListener listener) {
+        stateListeners.remove(listener);
+    }
+    
+    private void notifyStateListeners(ServerEvent event, Object data) {
+        for (ServerStateListener listener : stateListeners) {
+            listener.onServerStateChanged(event, data);
+        }
+    }
+
+    @Override
+    public void broadcastGameStateUpdate() {
+        if (!gameStarted) {
+            logger.info("游戏未开始，只发送玩家列表更新");
+            broadcastGameState();
+            return;
+        }
+        
+        // 创建游戏状态更新数据包
+        GameStateUpdate update = new GameStateUpdate(playerList, currentPlayer != null ? currentPlayer.getId() : null);
+        
+        // 设置最后出的牌
+        if (lastPlayedCards != null) {
+            update.setLastPlayedCards(lastPlayedCards);
+        }
+        
+        // 广播给所有玩家
+        server.sendToAllTCP(update);
+        
+        logger.info("已广播游戏状态更新");
+    }
+
+    private void broadcastPlayerList() {
+        // 创建包含玩家列表的更新包
+        GameStateUpdate update = new GameStateUpdate(playerList, null);
+        update.setPlayerCount(playerList.size());
+        
+        // 广播给所有玩家
+        server.sendToAllTCP(update);
+        
+        logger.info("已广播玩家列表更新，当前玩家数：" + playerList.size());
     }
 } 

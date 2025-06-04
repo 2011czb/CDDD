@@ -7,5 +7,6 @@ public enum ActionType {
     READY,        // 准备
     UNREADY,      // 取消准备
     JOIN,         // 加入游戏
-    LEAVE_GAME    // 离开游戏
+    LEAVE_GAME,   // 离开游戏
+    LEAVE         // 离开（兼容性）
 } 
