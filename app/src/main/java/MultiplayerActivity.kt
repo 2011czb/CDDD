@@ -7,7 +7,6 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import Game.Game
 import Network.NetworkManager
 
 class MultiplayerActivity : AppCompatActivity() {

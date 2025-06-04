@@ -8,7 +8,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import java.util.*
 import Game.Game
 import Players.HumanPlayer
@@ -18,6 +17,8 @@ import AI.AIStrategyType
 import android.graphics.Typeface
 import androidx.core.content.ContextCompat
 import Network.NetworkManager
+import android.os.Handler
+import android.os.Looper
 
 class GameActivity : AppCompatActivity() {
     private lateinit var playerCardsContainer: LinearLayout
@@ -39,12 +40,12 @@ class GameActivity : AppCompatActivity() {
     private var isMyTurn = false
     private var gameRule: String = "NORTH"
     
-    // 后端游戏相关变量
+    // 游戏相关变量
     private lateinit var game: Game
     private lateinit var humanPlayer: HumanPlayer
     private lateinit var networkManager: NetworkManager
     
-    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val handler = Handler(Looper.getMainLooper())
     private var isAITurn = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -350,7 +351,7 @@ class GameActivity : AppCompatActivity() {
         val historyText = TextView(this).apply {
             text = "$playerName: ${formatCards(cards)}"
             textSize = 14f
-            setTextColor(ContextCompat.getColor(context, android.R.color.black))
+            setTextColor(ContextCompat.getColor(context, R.color.black))
             setPadding(0, 4, 0, 4)
         }
         playHistoryContent.addView(historyText)
@@ -392,38 +393,36 @@ class GameActivity : AppCompatActivity() {
         try {
             // 显示AI正在思考
             showStatus("${aiPlayer.getName()}正在思考...", true)
-            
-            // 延迟一秒后出牌，让玩家能看到AI思考的过程
+
+            // 延迟一秒后，等待后端处理AI回合并更新UI
             handler.postDelayed({
-                // AI出牌
-                val playedCards = aiPlayer.playCards(emptyList())
-                
-                // 更新UI
-                if (playedCards.isNotEmpty()) {
-                    lastPlayedCards = playedCards.map { Card.fromBackendCard(it) }
-                    updateLastPlayText()
-                    addPlayHistory(aiPlayer.getName(), lastPlayedCards)
-                } else {
-                    addPlayHistory(aiPlayer.getName(), null)
-                }
-                
-                // 更新游戏状态
+                // AI的出牌行为应该已经在后端发生并更新了Game状态
+                // 我们需要更新前端UI来反映最新的游戏状态
+
+                // 由于无法直接获取AI出的牌，我们只能更新UI并检查游戏状态
+                // 如果后端在AI出牌后会推进回合，我们只需检查下一个玩家即可
+
+                updatePlayerCards() // 更新人类玩家手牌
                 updateGameStatus()
                 updatePlayerScores()
-                
+
                 // 检查游戏是否结束
                 if (game.isGameEnded()) {
                     val winner = game.getWinner()
                     showStatus("游戏结束！${winner?.getName()}获胜！", true)
-                    finish()
+                    // 游戏结束后可以考虑导航到结果界面或返回主菜单
+                    // finish()
                 } else {
-                    // 继续检查下一个玩家
+                    // 继续检查下一个玩家的回合
                     checkAndProcessAITurn()
                 }
-            }, 1000)
+            }, 1000) // 延迟1秒
+
         } catch (e: Exception) {
-            showStatus("AI出牌出错：${e.message}", true)
+            showStatus("处理AI回合出错：${e.message}", true)
             isAITurn = false
+            // 出错时也尝试检查下一个玩家，避免卡死
+            checkAndProcessAITurn()
         }
     }
 
@@ -431,20 +430,36 @@ class GameActivity : AppCompatActivity() {
         val selectedIndices = selectedCards.map { card ->
             playerCards.indexOf(card)
         }
-        
-        val playedCards = humanPlayer.playCards(selectedIndices)
-        if (playedCards.isNotEmpty()) {
-            lastPlayedCards = playedCards.map { Card.fromBackendCard(it) }
+
+        // 将选择的牌转换成后端Card对象列表
+        val cardsToPlay = selectedIndices
+            .filter { it >= 0 && it < humanPlayer.getHand().size }
+            .map { humanPlayer.getHand()[it] }
+
+        // 检查是否选择了牌（过牌逻辑在passPlay中处理）
+        if (cardsToPlay.isEmpty()) {
+            Toast.makeText(this, "请选择要出的牌", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 尝试出牌，后端playCards返回出成功的牌列表或空列表
+        val playedCardsBackend = humanPlayer.playCards(cardsToPlay as List<Int?>?)
+
+        if (playedCardsBackend != null && playedCardsBackend.isNotEmpty()) {
+            // 出牌成功
+            lastPlayedCards = playedCardsBackend.map { Card.fromBackendCard(it) }
             updateLastPlayText()
-            updatePlayerCards()
-            addPlayHistory(humanPlayer.getName(), lastPlayedCards)
+            updatePlayerCards() // 更新人类玩家手牌
+            // TODO: 添加出牌历史记录需要知道是哪个玩家出的牌
+            // addPlayHistory(humanPlayer.getName(), lastPlayedCards) // 暂时注释，需要后端提供获取最后出牌玩家的方法
             updateGameStatus()
             selectedCards.clear()
             isMyTurn = false
-            
+
             // 检查下一个玩家
             checkAndProcessAITurn()
         } else {
+            // 出牌失败（可能是不符合规则）
             Toast.makeText(this, "出牌无效", Toast.LENGTH_SHORT).show()
         }
     }
@@ -460,19 +475,29 @@ class GameActivity : AppCompatActivity() {
 
     private fun passPlay() {
         try {
-            // 尝试过牌
-            val playedCards = humanPlayer.playCards(emptyList())
-            
-            // 显示过牌成功提示
-            showStatus("过牌成功！", true)
-            addPlayHistory(humanPlayer.getName(), null)
-            
-            // 更新UI
-            updateGameStatus()
-            isMyTurn = false
-            
-            // 检查下一个玩家
-            checkAndProcessAITurn()
+            // 尝试过牌，后端playCards返回空列表表示过牌成功（如果不允许过牌可能抛异常或返回null）
+            val playedCardsBackend = humanPlayer.playCards(emptyList())
+
+            // 检查后端返回是否表示过牌成功
+            if (playedCardsBackend != null && playedCardsBackend.isEmpty()) {
+                // 过牌成功
+                // TODO: 添加过牌历史记录需要知道是哪个玩家过牌
+                // addPlayHistory(humanPlayer.getName(), null) // 暂时注释，需要后端提供获取过牌玩家的方法
+
+                // 显示过牌成功提示
+                showStatus("过牌成功！", true)
+
+                // 更新UI
+                updateGameStatus()
+                isMyTurn = false
+
+                // 检查下一个玩家
+                checkAndProcessAITurn()
+            } else {
+                 // 过牌失败（可能是不允许过牌或后端playCards返回非空/null表示错误）
+                 showStatus("过牌失败或当前不允许过牌", true)
+            }
+
         } catch (e: Exception) {
             showStatus(e.message ?: "过牌失败", true)
         }
@@ -507,7 +532,7 @@ class GameActivity : AppCompatActivity() {
         val textView = TextView(this).apply {
             this.text = text
             textSize = 14f
-            setTextColor(ContextCompat.getColor(context, android.R.color.black))
+            setTextColor(ContextCompat.getColor(context, R.color.black))
             if (isBold) {
                 setTypeface(null, Typeface.BOLD)
             }
