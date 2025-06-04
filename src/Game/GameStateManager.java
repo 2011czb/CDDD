@@ -65,37 +65,42 @@ public class GameStateManager {
      * 更新游戏状态
      */
     public synchronized void updateState(Player player, List<Card> playedCards) {
-        // 使用事务方式更新状态
-        GameStateTransaction transaction = new GameStateTransaction();
-        
+        GameStateTransaction transaction = null; // 在外部声明并初始化为null
         try {
+            transaction = new GameStateTransaction(); // 在try块内赋值
+
             if (playedCards != null && !playedCards.isEmpty()) {
                 transaction.addChange(() -> {
                     this.lastPlayedCards = new ArrayList<>(playedCards);
                     this.lastPlayerIndex = currentPlayerIndex;
                 });
             }
-            
+
             if (player.getHand().isEmpty()) {
                 transaction.addChange(() -> {
                     this.winner = player;
                     this.currentState = GameState.GAME_END;
                 });
             }
-            
-            // 提交事务
-            transaction.commit();
-            
+
+            transaction.commit(); // 提交事务
+
             // 通知监听器
             notifyListeners(EventType.CARDS_PLAYED);
             if (winner != null) {
                 notifyListeners(EventType.WINNER_DETERMINED);
             }
-            
         } catch (Exception e) {
-            // 回滚事务
-            transaction.rollback();
-            throw new GameException("更新游戏状态失败: " + e.getMessage());
+            System.err.println("更新游戏状态失败: " + e.getMessage());
+
+            // 安全回滚：仅在transaction非空时尝试回滚
+            if (transaction != null) {
+                try {
+                    transaction.rollback();
+                } catch (Exception ex) {
+                    System.err.println("回滚事务失败: " + ex.getMessage());
+                }
+            }
         }
     }
     

@@ -278,26 +278,32 @@ public class Game {
 
             // 单局游戏循环
             while (!stateManager.isGameEnded()) {
-                // 显示当前回合信息
-                displayManager.displayCurrentTurn();
-                
-                // 获取当前玩家
-                Player currentPlayer = stateManager.getCurrentPlayer();
-                
-                // 显示当前玩家的手牌
-                displayManager.displayPlayerHand(currentPlayer);
-                
-                // 处理玩家出牌
-                List<Card> playedCards = playManager.handlePlayerPlay(currentPlayer);
+                try {
+                    // 显示当前回合信息
+                    displayManager.displayCurrentTurn();
 
-                // 显示出牌结果
-                displayManager.displayPlayedCards(currentPlayer, playedCards);
-                
-                // 更新游戏状态
-                stateManager.updateState(currentPlayer, playedCards);
-                
-                // 转到下一个玩家
-                stateManager.nextPlayer();
+                    // 获取当前玩家
+                    Player currentPlayer = stateManager.getCurrentPlayer();
+
+                    // 显示当前玩家的手牌
+                    displayManager.displayPlayerHand(currentPlayer);
+
+                    // 处理玩家出牌
+                    List<Card> playedCards = playManager.handlePlayerPlay(currentPlayer);
+
+                    // 显示出牌结果
+                    displayManager.displayPlayedCards(currentPlayer, playedCards);
+
+                    // 更新游戏状态
+                    stateManager.updateState(currentPlayer, playedCards);
+
+                    // 转到下一个玩家
+                    stateManager.nextPlayer();
+                } catch (Exception e) {
+                    System.err.println("游戏过程中发生错误: " + e.getMessage());
+                    // 安全地移动到下一个玩家
+                    stateManager.nextPlayer();
+                }
             }
             
             // 游戏结束，处理结算

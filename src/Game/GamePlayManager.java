@@ -3,6 +3,8 @@ package Game;
 import Players.Player;
 import Rules.Rule;
 import cards.Card;
+
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,10 +20,10 @@ public class GamePlayManager {
         this.gameRule = gameRule;
         this.stateManager = stateManager;
         this.playValidator = new CompositePlayValidator(
-            new FirstPlayValidator(),
-            new PassPlayValidator(),
-            new PatternPlayValidator(gameRule),
-            new ComparePlayValidator(gameRule)
+                new FirstPlayValidator(),
+                new PassPlayValidator(),
+                new PatternPlayValidator(gameRule),
+                new ComparePlayValidator(gameRule)
         );
     }
 
@@ -29,35 +31,48 @@ public class GamePlayManager {
      * 处理玩家出牌
      */
     public List<Card> handlePlayerPlay(Player player) {
-        // 更新玩家状态
-        player.setLastPlayerIndex(stateManager.getLastPlayerIndex());
-        player.setCurrentPlayerIndex(stateManager.getCurrentPlayerIndex());
+        try {
+            // 更新玩家状态
+            player.setLastPlayerIndex(stateManager.getLastPlayerIndex());
+            player.setCurrentPlayerIndex(stateManager.getCurrentPlayerIndex());
 
-        // 获取上一手牌
-        List<Card> lastCards = stateManager.getLastPlayedCards();
+            // 获取上一手牌
+            List<Card> lastCards = stateManager.getLastPlayedCards();
 
-        // 玩家出牌
-        List<Card> playedCards = player.play(lastCards);
+            // 玩家出牌
+            List<Card> playedCards = player.play(lastCards);
 
-        // 验证出牌
-        ValidationResult result = playValidator.validate(playedCards, lastCards, player, stateManager);
-        if (!result.isValid()) {
-            throw new IllegalPlayException(result.getMessage());
+            // 验证出牌
+            ValidationResult result = playValidator.validate(playedCards, lastCards, player, stateManager);
+            if (!result.isValid()) {
+                // 改为返回错误信息而不是抛出异常
+                System.err.println("出牌无效: " + result.getMessage());
+                return Collections.emptyList(); // 安全返回空列表表示过牌
+            }
+
+            // 如果出牌合法，从玩家手牌中移除这些牌
+            if (playedCards != null && !playedCards.isEmpty()) {
+                player.removeCards(playedCards);
+            }
+
+            return playedCards;
+        } catch (Exception e) {
+            System.err.println("处理玩家出牌时出错: " + e.getMessage());
+            return Collections.emptyList(); // 安全返回空列表
         }
-
-        // 如果出牌合法，从玩家手牌中移除这些牌
-        if (playedCards != null && !playedCards.isEmpty()) {
-            player.removeCards(playedCards);
-        }
-
-        return playedCards;
     }
 
     /**
      * 判断当前出牌是否有效
      */
     public boolean isValidPlay(List<Card> cards, List<Card> lastCards, Player player) {
-        return playValidator.validate(cards, lastCards, player, stateManager).isValid();
+        try {
+            return playValidator.validate(cards, lastCards, player, stateManager).isValid();
+        } catch (Exception e) {
+            System.err.println("验证出牌时出错: " + e.getMessage());
+            return false; // 验证失败
+        }
+
     }
 }
 
@@ -217,12 +232,3 @@ class ValidationResult {
         return new ValidationResult(false, message);
     }
 }
-
-/**
- * 非法出牌异常
- */
-class IllegalPlayException extends RuntimeException {
-    public IllegalPlayException(String message) {
-        super(message);
-    }
-} 
