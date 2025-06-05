@@ -224,20 +224,21 @@ public class Game {
     }
 
     /**
-     * 创建多人模式游戏的工厂方法
+     * 处理游戏结束
      */
-    public static Game createMultiplayerGame(List<String> playerNames, int ruleType) {
-        List<Player> players = playerNames.stream()
-                .map(HumanPlayer::new)
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+    private void handleGameEnd() {
+        // 确定获胜者
+        Player winner = stateManager.getWinner();
+        System.out.println("\n游戏结束！" + winner.getName() + " 获胜！");
+        // 结算得分
+        scoreManager.settleGame(players, winner);
 
-        return new Builder()
-                .setPlayers(players)
-                .setGameMode(MODE_MULTIPLAYER)
-                .setRuleType(ruleType)
-                .build();
+        // 打印结算结果
+        scoreManager.printSettlementResults();
+
+        // 重置游戏状态
+        stateManager.reset();
     }
-
 
     // getter
     public int getGameMode() {
@@ -282,23 +283,6 @@ public class Game {
 
     public String getRuleName() {
         return gameRule instanceof NorthRule ? "北方规则" : "南方规则";
-    }
-
-    /**
-     * 处理游戏结束
-     */
-    private void handleGameEnd() {
-        // 确定获胜者
-        Player winner = stateManager.getWinner();
-        System.out.println("\n游戏结束！" + winner.getName() + " 获胜！");
-        // 结算得分
-        scoreManager.settleGame(players, winner);
-
-        // 打印结算结果
-        scoreManager.printSettlementResults();
-
-        // 重置游戏状态
-        stateManager.reset();
     }
 
 }
