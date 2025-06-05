@@ -75,6 +75,17 @@ public class Game {
     }
 
     /**
+     * 开始游戏
+     */
+    public void startGame() {
+        // 初始化游戏
+        initGame();
+
+        // 通知游戏状态管理器游戏开始
+        stateManager.startGame();
+    }
+
+    /**
      * 发牌逻辑
      */
     private void dealCards() {
@@ -212,6 +223,22 @@ public class Game {
                 .build();
     }
 
+    /**
+     * 创建多人模式游戏的工厂方法
+     */
+    public static Game createMultiplayerGame(List<String> playerNames, int ruleType) {
+        List<Player> players = playerNames.stream()
+                .map(HumanPlayer::new)
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+
+        return new Builder()
+                .setPlayers(players)
+                .setGameMode(MODE_MULTIPLAYER)
+                .setRuleType(ruleType)
+                .build();
+    }
+
+
     // getter
     public int getGameMode() {
         return gameMode;
@@ -256,4 +283,22 @@ public class Game {
     public String getRuleName() {
         return gameRule instanceof NorthRule ? "北方规则" : "南方规则";
     }
+
+    /**
+     * 处理游戏结束
+     */
+    private void handleGameEnd() {
+        // 确定获胜者
+        Player winner = stateManager.getWinner();
+        System.out.println("\n游戏结束！" + winner.getName() + " 获胜！");
+        // 结算得分
+        scoreManager.settleGame(players, winner);
+
+        // 打印结算结果
+        scoreManager.printSettlementResults();
+
+        // 重置游戏状态
+        stateManager.reset();
+    }
+
 }

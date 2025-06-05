@@ -26,7 +26,7 @@ public class SmartAIStrategy extends AbstractAIStrategy {
 
     @Override
     public List<Card> playPossiblePattern(Player player) {
-        
+
         List<CardGroup> allPatterns = getAllPossiblePatterns(player);
         if (allPatterns.isEmpty()) {
             return Collections.emptyList();
@@ -38,7 +38,7 @@ public class SmartAIStrategy extends AbstractAIStrategy {
         // 新增：优先考虑出废牌
         List<Card> wasteCards = identifyWasteCards(player.getHand());
         if (!wasteCards.isEmpty()) {
-            
+
             // 尝试出最小的废牌（单张）
             Optional<CardGroup> wasteGroup = allPatterns.stream()
                     .filter(group -> {
@@ -165,7 +165,7 @@ public class SmartAIStrategy extends AbstractAIStrategy {
     private CardGroup chooseFirstPlayStrategy(List<CardGroup> availableGroups,
                                               PlayerHandAnalysis analysis) {
         // 如果玩家没有大牌，AI可以用大牌抢到牌权
-        if (!analysis.hasBigCards) { 
+        if (!analysis.hasBigCards) {
             return findMaxCardGroup(availableGroups);
         }
 
@@ -265,7 +265,7 @@ public class SmartAIStrategy extends AbstractAIStrategy {
         if (maxGroup == null) {
             return null;
         }
-        
+
         return maxGroup;
     }
 

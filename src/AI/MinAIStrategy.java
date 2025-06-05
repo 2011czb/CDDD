@@ -39,11 +39,11 @@ public class MinAIStrategy extends AbstractAIStrategy {
     public List<Card> tryToMatchLastPlay(Player player, List<Card> lastCards) {
         // 获取所有可能的牌型组合
         List<CardGroup> allPatterns = getAllPossiblePatterns(player);
-        
+
         // 找出所有比上一手牌大的组合
         List<CardGroup> largerGroups = allPatterns.stream()
-            .filter(group -> isLargerThanLastPlay(group.getCards(), lastCards))
-            .collect(Collectors.toList());
+                .filter(group -> isLargerThanLastPlay(group.getCards(), lastCards))
+                .collect(Collectors.toList());
 
         if (largerGroups.isEmpty()) {
             return Collections.emptyList();
@@ -64,19 +64,19 @@ public class MinAIStrategy extends AbstractAIStrategy {
     public List<Card> playFirstHandWithDiamondThree(Player player) {
         // 获取所有可能的牌型组合
         List<CardGroup> allPatterns = getAllPossiblePatterns(player);
-        
+
         // 找出所有包含方块三的组合
         List<CardGroup> groupsWithDiamondThree = allPatterns.stream()
-            .filter(group -> group.getCards().stream()
-                .anyMatch(card -> card.getSuit() == Suit.DIAMONDS && card.getRank() == Rank.THREE))
-            .collect(Collectors.toList());
+                .filter(group -> group.getCards().stream()
+                        .anyMatch(card -> card.getSuit() == Suit.DIAMONDS && card.getRank() == Rank.THREE))
+                .collect(Collectors.toList());
 
         if (groupsWithDiamondThree.isEmpty()) {
             // 如果没有找到包含方块三的组合，就出单张方块三
             List<Card> diamondThree = player.getHand().stream()
-                .filter(card -> card.getSuit() == Suit.DIAMONDS && card.getRank() == Rank.THREE)
-                .collect(Collectors.toList());
-            
+                    .filter(card -> card.getSuit() == Suit.DIAMONDS && card.getRank() == Rank.THREE)
+                    .collect(Collectors.toList());
+
             if (!diamondThree.isEmpty()) {
                 List<Integer> indices = getIndicesByCards(player.getHand(), diamondThree);
                 return playCardsAndDisplay(player, indices);
@@ -94,6 +94,4 @@ public class MinAIStrategy extends AbstractAIStrategy {
         List<Integer> indices = getIndicesByCards(player.getHand(), smallestGroup.getCards());
         return playCardsAndDisplay(player, indices);
     }
-
-
 } 

@@ -55,16 +55,16 @@ public abstract class Player {
         if (deck.cardsRemaining() <= 0) {
             return; // 牌堆为空，不尝试抽牌
         }
-        
+
         Optional<Card> cardOpt = deck.dealCard(); // 从牌堆发牌
         cardOpt.ifPresent(this::receiveCard); // 如果成功发牌，则接收 (使用方法引用简化)
-        
+
         // 只有在预期能抽到牌但未抽到时才记录错误
         if (!cardOpt.isPresent()) {
             System.out.println("警告：牌堆异常，" + name + "未能抽到牌");
         }
     }
-    
+
     /**
      * 对玩家手牌进行排序
      * 排序规则：使用复合权重排序，牌面值权重占主导地位（方片2 > 黑桃A）
@@ -73,7 +73,7 @@ public abstract class Player {
         // 使用Lambda表达式直接使用Card的getWeight方法排序
         Collections.sort(hand, (card1, card2) -> card2.getWeight() - card1.getWeight());
     }
-    
+
     /**
      * 玩家出牌
      * @param cardIndices 要出的牌的索引列表
@@ -87,16 +87,16 @@ public abstract class Player {
                 return Collections.emptyList();
             }
         }
-        
+
         // 按照索引从手牌中取出卡牌
         List<Card> playedCards = new ArrayList<>();
         for (int index : cardIndices) {
             playedCards.add(hand.get(index));
         }
-        
+
         return playedCards;
     }
-    
+
     /**
      * 从手牌中移除指定的牌
      * @param cards 要移除的牌列表
@@ -104,14 +104,14 @@ public abstract class Player {
     public void removeCards(List<Card> cards) {
         hand.removeAll(cards);
     }
-    
+
     /**
      * 玩家出牌（自动响应上一手牌）
      * @param lastCards 上一手牌
      * @return 出的牌列表，如果不出则返回空列表
      */
     public abstract List<Card> play(List<Card> lastCards);
-    
+
     /**
      * 根据牌面值查找手牌中的卡牌索引
      * @param rankDisplayName 牌面值显示名称，如"A"、"K"等
@@ -128,8 +128,8 @@ public abstract class Player {
     }
     //清空玩家手牌
     public void clearHand(){
-    hand.clear();
-}
+        hand.clear();
+    }
 
     public void setLastPlayerIndex(int index) {
         this.lastPlayerIndex = index;
@@ -146,7 +146,7 @@ public abstract class Player {
     public int getCurrentPlayerIndex() {
         return currentPlayerIndex;
     }
-    
+
     public int getScore() {
         return score;
     }

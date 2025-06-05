@@ -1,4 +1,3 @@
-// AbstractAIStrategy.java
 package AI;
 
 import PokerPatterns.basis.*;
@@ -202,8 +201,8 @@ public abstract class AbstractAIStrategy implements AIStrategy {
 
         // 废牌是未被覆盖的牌，但不包括A和2
         return hand.stream()
-                .filter(card -> !coveredCards.contains(card) && 
-                              card.getRank() != Rank.ACE && 
+                .filter(card -> !coveredCards.contains(card) &&
+                              card.getRank() != Rank.ACE &&
                               card.getRank() != Rank.TWO)
                 .collect(Collectors.toList());
     }

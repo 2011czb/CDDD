@@ -26,7 +26,7 @@ public class Three extends PokerPattern {
     @Override
     public boolean match(List<Card> cards){
         if(cards.size() == 3 && cards.get(0).getRank().getValue() == cards.get(1).getRank().getValue()
-               &&cards.get(1).getRank().getValue() == cards.get(2).getRank().getValue()) return true;
+                &&cards.get(1).getRank().getValue() == cards.get(2).getRank().getValue()) return true;
         return false;
     }
 
@@ -39,7 +39,7 @@ public class Three extends PokerPattern {
     public List<CardGroup> potentialCardGroup(List<Card> availableCards) {
         List<CardGroup> result = new ArrayList<>();
         AnnotatedCards annotatedCards = new AnnotatedCards(availableCards);
-        
+
         // 遍历所有点数相同的牌组
         for (List<Card> cards : annotatedCards.getNumberMap().values()) {
             // 如果某个点数的牌数量大于等于3，则生成所有可能的三张组合

@@ -184,13 +184,6 @@ public class GameStateManager {
 }
 
 /**
- * 游戏状态监听器接口
- */
-interface GameStateListener {
-    void onGameStateChanged(GameStateManager.EventType eventType, GameStateManager stateManager);
-}
-
-/**
  * 游戏状态事务类
  */
 class GameStateTransaction {

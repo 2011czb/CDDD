@@ -36,15 +36,15 @@ public class Flush extends PokerPattern {
                 return false;
             }
         }
-        
+
         // 判断是否为顺子
-       
+
         // 如果是顺子，则不是同花五
 
         if (Straight.getInstance().match(cards)) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -58,20 +58,20 @@ public class Flush extends PokerPattern {
     @Override
     public List<CardGroup> potentialCardGroup(List<Card> availableCards) {
         List<CardGroup> result = new ArrayList<>();
-        
+
         // 按花色分类
         Map<Suit, List<Card>> suitMap = new HashMap<>();
         for (Card card : availableCards) {
             suitMap.computeIfAbsent(card.getSuit(), k -> new ArrayList<>()).add(card);
         }
-        
+
         // 对每种花色，如果牌数大于等于5，生成所有可能的五张组合
         for (List<Card> suitCards : suitMap.values()) {
             if (suitCards.size() >= 5) {
                 PatternMatchUtil.enumCombinationSimple(result, suitCards, 5);
             }
         }
-        
+
         return result;
     }
 }

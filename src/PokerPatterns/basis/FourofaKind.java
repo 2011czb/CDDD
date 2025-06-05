@@ -62,5 +62,5 @@ public class FourofaKind extends PokerPattern {
     @Override
     public List<CardGroup> potentialCardGroup(List<Card> availableCards) {
         return PatternMatchUtil.getFourCombinations(availableCards);
-        }
     }
+}
