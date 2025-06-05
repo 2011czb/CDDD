@@ -30,12 +30,16 @@ public abstract class PokerPattern {
     /*
      *牌型名称（如"同花顺"、"四条"）
      */
-    public abstract String getName();
+    public String getName(){
+        return this.name;
+    };
 
     /*
      *牌型权重（用于比较大小，权重越高牌型越强）
      */
-    public abstract int getPatternWeight();
+    public int getPatternWeight(){
+        return this.weight;
+    };
 
     /*
      * 找出牌型中最大的牌（用于比较同牌型大小）

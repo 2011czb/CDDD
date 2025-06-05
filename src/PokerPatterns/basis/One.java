@@ -29,16 +29,6 @@ public class One extends PokerPattern {
     }
 
     @Override
-    public String getName(){
-        return this.name;
-    }
-
-    @Override
-    public int getPatternWeight(){
-        return this.weight;
-    }
-
-    @Override
     public int getCritical(List<Card> cards){
         return cards.get(0).getWeight();
     }

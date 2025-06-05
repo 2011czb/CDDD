@@ -2,21 +2,21 @@ package Game;
 
 import Players.*;
 import AI.*;
+import PokerPatterns.PlayablePatternUtil;
+import PokerPatterns.generator.CardGroup;
 import cards.Card;
 import cards.Deck;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
 import Rules.Rule;
 import Rules.NorthRule;
 import Rules.SouthRule;
 
 /**
  * game：游戏初始化，主循环，管理基本游戏状态
- * GameStateManager：管理游戏状态，包括当前玩家、游戏是否结束、获胜者等
- * GamePlayManager：处理玩家出牌逻辑，验证出牌是否合法
- * GameDisplayManager：显示游戏界面，包括当前玩家、游戏状态、出牌结果等
- * GameScoreManager: 玩家的积分计算和显示
  */
 
 public class Game {
@@ -36,8 +36,7 @@ public class Game {
     // 游戏管理器
     private final GameStateManager stateManager;
     private final GamePlayManager playManager;
-    private final GameDisplayManager displayManager;
-    private final GameScoreManager scoreManager;  // 添加结算管理器
+    private GameScoreManager scoreManager;  // 添加结算管理器
 
     /**
      * 使用建造者模式创建游戏实例
@@ -49,51 +48,8 @@ public class Game {
         this.deck = new Deck();
 
         this.stateManager = new GameStateManager(players);
-        this.displayManager = new GameDisplayManager(stateManager, gameRule);
         this.playManager = new GamePlayManager(gameRule, stateManager);
         this.scoreManager = new GameScoreManager(players);
-    }
-
-    /**
-     * 获取游戏模式
-     */
-    public int getGameMode() {
-        return gameMode;
-    }
-
-    /**
-     * 获取玩家列表
-     */
-    public List<Player> getPlayers() {
-        return Collections.unmodifiableList(players);
-    }
-
-    /**
-     * 获取游戏规则
-     */
-    public Rule getGameRule() {
-        return gameRule;
-    }
-
-    /**
-     * 获取状态管理器
-     */
-    public GameStateManager getStateManager() {
-        return stateManager;
-    }
-
-    /**
-     * 获取游戏管理器
-     */
-    public GamePlayManager getPlayManager() {
-        return playManager;
-    }
-
-    /**
-     * 获取分数管理器
-     */
-    public GameScoreManager getScoreManager() {
-        return scoreManager;
     }
 
     /**
@@ -144,6 +100,18 @@ public class Game {
         updateAIStrategies();
     }
 
+    //获取可出牌提示
+    public Map<String, List<CardGroup>> getPlayablePatterns(Player player) {
+        List<Card> hand = player.getHand();
+        List<Card> lastCards = stateManager.getLastPlayedCards();
+        int lastPlayerIndex = stateManager.getLastPlayerIndex();
+        int currentPlayerIndex = stateManager.getCurrentPlayerIndex();
+
+        return PlayablePatternUtil.getPlayablePatterns(
+                hand, lastCards, gameRule, lastPlayerIndex, currentPlayerIndex
+        );
+    }
+
     /**
      * 更新AI策略
      */
@@ -159,7 +127,7 @@ public class Game {
                     .map(p -> ((AIPlayer) p).getStrategy())
                     .forEach(strategy -> {
                         if (strategy instanceof SmartAIStrategy) {
-                            ((SmartAIStrategy) strategy).setPlayer((HumanPlayer) humanPlayer);
+                            ((SmartAIStrategy) strategy).setPlayer((HumanPlayer)humanPlayer);
                         } else if (strategy instanceof DynamicAIStrategy) {
                             DynamicAIStrategy dynamicStrategy = (DynamicAIStrategy) strategy;
                             dynamicStrategy.setHumanPlayer((HumanPlayer) humanPlayer);
@@ -244,128 +212,31 @@ public class Game {
                 .build();
     }
 
-    /**
-     * 创建多人模式游戏的工厂方法
-     */
-    public static Game createMultiplayerGame(List<String> playerNames, int ruleType) {
-        List<Player> players = playerNames.stream()
-                .map(HumanPlayer::new)
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-
-        return new Builder()
-                .setPlayers(players)
-                .setGameMode(MODE_MULTIPLAYER)
-                .setRuleType(ruleType)
-                .build();
+    // getter
+    public int getGameMode() {
+        return gameMode;
     }
 
-    /**
-     * 开始游戏
-     */
-    public void startGame() {
-        gameLoop();
+    public List<Player> getPlayers() {
+        return Collections.unmodifiableList(players);
     }
 
-    /**
-     * 游戏主循环
-     */
-    private void gameLoop() {
-        boolean continueGame = true;
-
-        while (continueGame) {
-            // 初始化新的一局游戏
-            initGame();
-
-            // 单局游戏循环
-            while (!stateManager.isGameEnded()) {
-                try {
-                    // 显示当前回合信息
-                    displayManager.displayCurrentTurn();
-
-                    // 获取当前玩家
-                    Player currentPlayer = stateManager.getCurrentPlayer();
-
-                    // 显示当前玩家的手牌
-                    displayManager.displayPlayerHand(currentPlayer);
-
-                    // 处理玩家出牌
-                    List<Card> playedCards = playManager.handlePlayerPlay(currentPlayer);
-
-                    // 显示出牌结果
-                    displayManager.displayPlayedCards(currentPlayer, playedCards);
-
-                    // 更新游戏状态
-                    stateManager.updateState(currentPlayer, playedCards);
-
-                    // 转到下一个玩家
-                    stateManager.nextPlayer();
-                } catch (Exception e) {
-                    System.err.println("游戏过程中发生错误: " + e.getMessage());
-                    // 安全地移动到下一个玩家
-                    stateManager.nextPlayer();
-                }
-            }
-
-            // 游戏结束，处理结算
-            handleGameEnd();
-
-            // 询问是否继续游戏
-            if (gameMode == MODE_SINGLE_PLAYER) {
-                System.out.println("\n是否继续游戏？(y/n)");
-                String input = new java.util.Scanner(System.in).nextLine().trim().toLowerCase();
-                continueGame = input.equals("y");
-
-                if (!continueGame) {
-                    System.out.println("\n游戏结束，感谢游玩！");
-                    // 如果是人类玩家退出，清空AI玩家的得分
-                    for (Player player : players) {
-                        if (player instanceof AIPlayer) {
-                            scoreManager.clearScores();
-                            break;
-                        }
-                    }
-                } else {
-                    // 询问是否更换AI策略
-                    System.out.println("\n是否更换AI策略？(y/n)");
-                    input = new java.util.Scanner(System.in).nextLine().trim().toLowerCase();
-
-                    if (input.equals("y")) {
-                        // 显示AI策略选项
-                        AIStrategyType.displayOptions();
-                        System.out.println("请选择新的AI策略：");
-
-                        try {
-                            int strategyChoice = Integer.parseInt(new java.util.Scanner(System.in).nextLine().trim());
-                            AIStrategyType newStrategyType = AIStrategyType.fromId(strategyChoice);
-
-                            // 更新所有AI玩家的策略
-                            for (Player player : players) {
-                                if (player instanceof AIPlayer) {
-                                    AIStrategy newStrategy = newStrategyType.getStrategy();
-                                    newStrategy.setRule(gameRule);
-                                    ((AIPlayer) player).setStrategy(newStrategy);
-                                }
-                            }
-
-                            System.out.println("AI策略已更新！");
-                        } catch (Exception e) {
-                            System.out.println("输入无效，保持原有AI策略");
-                        }
-                    }
-
-                    System.out.println("\n开始新的一局游戏！");
-                }
-            } else {
-                // 多人模式下，等待所有玩家确认是否继续
-                // TODO: 实现多人模式下的继续游戏逻辑
-                continueGame = false;
-            }
-        }
+    public Rule getGameRule() {
+        return gameRule;
     }
 
-    /**
-     * 获取游戏状态
-     */
+    public GameStateManager getStateManager() {
+        return stateManager;
+    }
+
+    public GamePlayManager getPlayManager() {
+        return playManager;
+    }
+
+
+    public GameScoreManager getScoreManager() {
+        return scoreManager;
+    }
     public boolean isGameEnded() {
         return stateManager.isGameEnded();
     }
@@ -378,41 +249,11 @@ public class Game {
         return stateManager.getCurrentPlayer();
     }
 
-    /**
-     * 获取当前游戏规则类型
-     */
     public int getRuleType() {
         return gameRule instanceof NorthRule ? RULE_NORTH : RULE_SOUTH;
     }
 
-    /**
-     * 获取当前游戏规则的名称
-     */
     public String getRuleName() {
         return gameRule instanceof NorthRule ? "北方规则" : "南方规则";
-    }
-
-    /**
-     * 处理游戏结束
-     */
-    private void handleGameEnd() {
-        // 确定获胜者
-        Player winner = stateManager.getWinner();
-        System.out.println("\n游戏结束！" + winner.getName() + " 获胜！");
-        // 结算得分
-        scoreManager.settleGame(players, winner);
-
-        // 打印结算结果
-        scoreManager.printSettlementResults();
-
-        // 重置游戏状态
-        stateManager.reset();
-    }
-
-    /**
-     * Get the game display manager
-     */
-    public GameDisplayManager getDisplayManager() {
-        return displayManager;
     }
 }

@@ -11,11 +11,11 @@ import java.util.HashMap;
 
 public class GameScoreManager {
     private final List<Player> players;
-    
+
     public GameScoreManager(List<Player> players) {
         this.players = players;
     }
-    
+
     /**
      * 进行游戏结算
      * @param players 所有玩家列表
@@ -24,31 +24,31 @@ public class GameScoreManager {
     public void settleGame(List<Player> players, Player winner) {
         // 计算每个玩家的牌分
         Map<Player, Integer> cardScores = new HashMap<>();
-        
+
         for (Player player : players) {
             int remainingCards = player.getHand().size();
             boolean hasSpade2 = hasSpade2(player.getHand());
             int cardScore = calculateCardScore(remainingCards, hasSpade2);
             cardScores.put(player, cardScore);
         }
-        
+
         // 计算每个玩家的最终得分
         for (Player player : players) {
             int[] otherPlayersCardScores = players.stream()
-                .filter(p -> p != player)
-                .mapToInt(cardScores::get)
-                .toArray();
-                
+                    .filter(p -> p != player)
+                    .mapToInt(cardScores::get)
+                    .toArray();
+
             int finalScore = calculateFinalScore(
-                cardScores.get(player),
-                otherPlayersCardScores
+                    cardScores.get(player),
+                    otherPlayersCardScores
             );
-            
+
             // 更新玩家对象的积分
             player.addScore(finalScore);
         }
     }
-    
+
     /**
      * 清空所有得分
      */
@@ -58,7 +58,7 @@ public class GameScoreManager {
             player.setScore(0);
         }
     }
-    
+
     /**
      * 打印结算结果
      */

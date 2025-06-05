@@ -35,16 +35,6 @@ public class StraightFlush extends PokerPattern {
     }
 
     @Override
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public int getPatternWeight() {
-        return this.weight;
-    }
-
-    @Override
     public int getCritical(List<Card> cards) {
         return Straight.getInstance().getCritical(cards);
     }
