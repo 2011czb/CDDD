@@ -317,21 +317,21 @@ class GameActivity : AppCompatActivity() {
             val players = game.getPlayers()
             val currentPlayerIndex = gameStateManager.getCurrentPlayerIndex()
 
-            Log.d(TAG, "updateOtherPlayersInfo: 更新左侧玩家信息")
-            // 固定玩家位置显示
-            // 左侧玩家（固定为索引1的玩家）
-            findViewById<TextView>(R.id.leftPlayerName).text = players[1].name
-            findViewById<TextView>(R.id.leftPlayerCards).text = "剩余: ${players[1].getHand().size}"
+            // 逆时针顺序：玩家(0) -> 右侧(3) -> 上方(2) -> 左侧(1)
+            Log.d(TAG, "updateOtherPlayersInfo: 更新右侧玩家信息")
+            // 右侧玩家（固定为索引3的玩家）
+            findViewById<TextView>(R.id.rightPlayerName).text = players[3].name
+            findViewById<TextView>(R.id.rightPlayerCards).text = "剩余: ${players[3].getHand().size}"
 
             Log.d(TAG, "updateOtherPlayersInfo: 更新上方玩家信息")
             // 上方玩家（固定为索引2的玩家）
             findViewById<TextView>(R.id.topPlayerName).text = players[2].name
             findViewById<TextView>(R.id.topPlayerCards).text = "剩余: ${players[2].getHand().size}"
 
-            Log.d(TAG, "updateOtherPlayersInfo: 更新右侧玩家信息")
-            // 右侧玩家（固定为索引3的玩家）
-            findViewById<TextView>(R.id.rightPlayerName).text = players[3].name
-            findViewById<TextView>(R.id.rightPlayerCards).text = "剩余: ${players[3].getHand().size}"
+            Log.d(TAG, "updateOtherPlayersInfo: 更新左侧玩家信息")
+            // 左侧玩家（固定为索引1的玩家）
+            findViewById<TextView>(R.id.leftPlayerName).text = players[1].name
+            findViewById<TextView>(R.id.leftPlayerCards).text = "剩余: ${players[1].getHand().size}"
 
             // 更新当前玩家显示
             val currentPlayer = players[currentPlayerIndex]

@@ -18,8 +18,8 @@ import com.example.cdd.R
 
 class CenterCardAdapter : ListAdapter<Card, CenterCardAdapter.CardViewHolder>(CardDiffCallback()) {
     companion object {
-        private const val ANIMATION_DURATION = 300L // 动画持续时间（毫秒）
-        private const val SCALE_FACTOR = 0.7f // 缩放比例
+        private const val ANIMATION_DURATION = 200L // 缩短动画时间
+        private const val SCALE_FACTOR = 0.8f // 调整缩放比例
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {

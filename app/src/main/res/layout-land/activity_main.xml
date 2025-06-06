@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:background="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+
+        <!-- 左侧：游戏模式和规则 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/leftCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/rightCard"
+            app:layout_constraintBottom_toTopOf="@id/startButton"
+            app:layout_constraintWidth_percent="0.45"
+            app:layout_constraintVertical_bias="0">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/gameModeTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="选择游戏模式"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginBottom="16dp"/>
+
+                <RadioGroup
+                    android:id="@+id/gameModeGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp">
+
+                    <RadioButton
+                        android:id="@+id/modeSingle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="单人模式（1人对战3个AI）"
+                        android:textSize="16sp"
+                        android:padding="8dp"/>
+
+                    <RadioButton
+                        android:id="@+id/modeMulti"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="多人模式（4人联机对战）"
+                        android:textSize="16sp"
+                        android:padding="8dp"/>
+
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/gameRuleTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="选择游戏规则"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginBottom="16dp"/>
+
+                <RadioGroup
+                    android:id="@+id/gameRuleGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <RadioButton
+                        android:id="@+id/ruleNorth"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="北方规则"
+                        android:textSize="16sp"
+                        android:padding="8dp"/>
+
+                    <RadioButton
+                        android:id="@+id/ruleSouth"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="南方规则"
+                        android:textSize="16sp"
+                        android:padding="8dp"/>
+
+                </RadioGroup>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 右侧：AI策略和玩家信息 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/rightCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/leftCard"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/startButton"
+            app:layout_constraintWidth_percent="0.45"
+            app:layout_constraintVertical_bias="0">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/aiStrategyTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI策略设置"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginBottom="16dp"/>
+
+                <RadioGroup
+                    android:id="@+id/aiStrategyGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp">
+
+                    <RadioButton
+                        android:id="@+id/strategyBasic"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="简单智能策略"
+                        android:checked="true"
+                        android:textSize="16sp"
+                        android:padding="8dp"/>
+
+                    <RadioButton
+                        android:id="@+id/strategyAdvanced"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="中等智能策略"
+                        android:textSize="16sp"
+                        android:padding="8dp"/>
+
+                    <RadioButton
+                        android:id="@+id/strategyExpert"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="高级智能策略"
+                        android:textSize="16sp"
+                        android:padding="8dp"/>
+
+                </RadioGroup>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="玩家信息"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginBottom="16dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/playerNameLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入玩家名称"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/playerNameInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 开始游戏按钮 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/startButtonCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:layout_constraintTop_toBottomOf="@id/leftCard"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintWidth_percent="0.6">
+
+            <Button
+                android:id="@+id/startButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="开始游戏"
+                android:textSize="20sp"
+                android:padding="16dp"
+                android:backgroundTint="@color/design_default_color_primary"/>
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView> 
