@@ -12,6 +12,7 @@ import Players.HumanPlayer
 import Players.Player
 import UI.Adapter.RankingAdapter
 import UI.Adapter.CenterCardAdapter
+import UI.Adapter.RoundPlaysAdapter
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -61,8 +62,12 @@ class GameActivity : AppCompatActivity() {
     // 用于提示功能的索引
     private var currentHintIndex = 0
 
-    // 新增：用于记录本轮所有玩家的出牌，顺序为：本地玩家、左、上、右（逆时针）
+    // 新增：用于记录本轮所有玩家的出牌
     private val roundPlays = mutableListOf<Pair<Player, List<Card>>>()
+
+    private lateinit var roundPlaysAdapter: RoundPlaysAdapter
+
+    private var gameEndDialog: AlertDialog? = null
 
     companion object {
         private const val TAG = "GameActivity"
@@ -231,9 +236,9 @@ class GameActivity : AppCompatActivity() {
         // 初始化中央牌池
         centerCardPool = findViewById(R.id.centerCardPool)
         centerCardAdapter = CenterCardAdapter()
-        centerCardPool.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        centerCardPool.adapter = centerCardAdapter
+        roundPlaysAdapter = RoundPlaysAdapter()
+        centerCardPool.adapter = roundPlaysAdapter
+        centerCardPool.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
         // 设置按钮点击事件
         btnPlayCards.setOnClickListener {
@@ -455,32 +460,19 @@ class GameActivity : AppCompatActivity() {
 
     // 新增：统一更新中央牌池
     private fun updateCenterCardPoolForRound() {
-        // 展示所有玩家本轮的出牌，过牌用不出牌代替
-        // 顺序：本地玩家、左、上、右
-        val players = game.getPlayers()
-        val playerOrder = listOf(0, 1, 2, 3) // 0:本地, 1:左, 2:上, 3:右
-        val cardGroups = mutableListOf<List<Card>>()
-        for (i in playerOrder) {
-            val play = roundPlays.getOrNull(i)?.second ?: emptyList()
-            cardGroups.add(if (play.isEmpty()) listOf(Card.createPassCard()) else play)
-        }
-        // 这里将四组牌合并为一组，实际UI可根据需要分行/分列显示
-        // 目前先简单合并，后续可扩展为多行布局
-        centerCardAdapter.submitList(cardGroups.flatten())
-
-        // 如果所有玩家都出过一次，延迟清空中央牌池
-        if (roundPlays.size == 4) {
-            handler.postDelayed({
-                roundPlays.clear()
-                centerCardAdapter.submitList(emptyList())
-            }, 1200) // 1.2秒后清空
+        roundPlaysAdapter.submitList(roundPlays)
+        // 自动滚动到最新出牌玩家
+        centerCardPool.post {
+            if (roundPlays.isNotEmpty()) {
+                centerCardPool.smoothScrollToPosition(roundPlays.size - 1)
+            }
         }
     }
 
     // 新增：每轮结束时清空roundPlays
     private fun onRoundEnd() {
         roundPlays.clear()
-        centerCardAdapter.submitList(emptyList())
+        roundPlaysAdapter.submitList(emptyList())
         updateUI()
     }
 
@@ -517,7 +509,7 @@ class GameActivity : AppCompatActivity() {
             .setView(dialogView)
             .setCancelable(false)
             .create()
-
+        gameEndDialog = dialog
         // 设置获胜者信息
         dialogView.findViewById<TextView>(R.id.tvWinner).text = "获胜者: ${winner.name}"
 
@@ -553,7 +545,7 @@ class GameActivity : AppCompatActivity() {
             // 重置UI状态
             isAITurnInProgress = false
             currentHintIndex = 0
-            centerCardAdapter.submitList(emptyList())
+            roundPlaysAdapter.submitList(emptyList())
             handAdapter.submitList(emptyList())
 
             // 保存当前游戏设置
@@ -601,6 +593,7 @@ class GameActivity : AppCompatActivity() {
                 .setTitle("选择AI策略")
                 .setItems(strategyNames) { _, which ->
                     val selectedStrategy = strategies[which]
+                    gameEndDialog?.dismiss() // 关闭排行榜弹窗
                     restartGame(selectedStrategy)
                 }
                 .setCancelable(false)

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="60dp"
-    android:layout_height="90dp"
-    android:layout_margin="2dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    android:layout_width="40dp"
+    android:layout_height="60dp"
+    android:layout_margin="1dp"
+    app:cardCornerRadius="6dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="4dp">
+        android:padding="2dp">
 
         <!-- 左上角 -->
         <LinearLayout
@@ -23,14 +23,14 @@
                 android:id="@+id/tvCardRankTop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:textSize="8sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvCardSuitTop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp" />
+                android:textSize="8sp" />
         </LinearLayout>
 
         <!-- 中间花色 -->
@@ -40,7 +40,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:textSize="24sp" />
+            android:textSize="14sp" />
 
         <!-- 右下角 -->
         <LinearLayout
@@ -53,13 +53,13 @@
                 android:id="@+id/tvCardSuitBottom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp" />
+                android:textSize="8sp" />
 
             <TextView
                 android:id="@+id/tvCardRankBottom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:textSize="8sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
