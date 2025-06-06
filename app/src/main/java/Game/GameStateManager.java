@@ -101,11 +101,12 @@ public class GameStateManager {
     }
 
     /**
-     * 切换到下一个玩家
+     * 切换到下一个玩家（逆时针顺序）
      */
     public void nextPlayer() {
         int oldIndex = currentPlayerIndex;
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        // 修改为逆时针顺序：当前索引减1，如果小于0则循环到最后一个玩家
+        currentPlayerIndex = (currentPlayerIndex - 1 + players.size()) % players.size();
 
         if (oldIndex != currentPlayerIndex) {
             notifyListeners(EventType.PLAYER_CHANGED);

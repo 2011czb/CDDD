@@ -61,6 +61,9 @@ class GameActivity : AppCompatActivity() {
     // 用于提示功能的索引
     private var currentHintIndex = 0
 
+    // 新增：用于记录本轮所有玩家的出牌，顺序为：本地玩家、左、上、右（逆时针）
+    private val roundPlays = mutableListOf<Pair<Player, List<Card>>>()
+
     companion object {
         private const val TAG = "GameActivity"
         //TODO ai回合延迟时间
@@ -80,11 +83,7 @@ class GameActivity : AppCompatActivity() {
                 GameStateManager.EventType.CARDS_PLAYED -> {
                     runOnUiThread {
                         updateUI()
-                        // 更新中央牌池
-                        val lastCards = stateManager.getLastPlayedCards()
-                        if (lastCards != null) {
-                            centerCardAdapter.submitList(lastCards)
-                        }
+                        updateCenterCardPoolForRound()
                     }
                 }
                 GameStateManager.EventType.GAME_STATE_CHANGED -> {
@@ -109,17 +108,16 @@ class GameActivity : AppCompatActivity() {
 
         override fun onCardPlayed(player: Player, cards: List<Card>) {
             runOnUiThread {
-                // 更新中央牌池
-                centerCardAdapter.submitList(cards)
+                // 记录出牌
+                roundPlays.add(player to cards)
+                updateCenterCardPoolForRound()
                 updateUI()
             }
         }
 
         override fun onRoundEnd() {
             runOnUiThread {
-                // 清空中央牌池
-                centerCardAdapter.submitList(emptyList())
-                updateUI()
+                onRoundEnd()
             }
         }
     }
@@ -127,6 +125,7 @@ class GameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
+        supportActionBar?.hide()
 
         Log.d(TAG, "onCreate: 开始初始化游戏")
 
@@ -368,23 +367,6 @@ class GameActivity : AppCompatActivity() {
         // handAdapter.updateSelectedCards(selectedCards)
     }
 
-    private fun updatePlayerPlayedCards(playerIndex: Int, cards: List<Card>) {
-        val adapter = when (playerIndex) {
-            0 -> playerPlayedCardsAdapter
-            1 -> leftPlayerPlayedCardsAdapter
-            2 -> topPlayerPlayedCardsAdapter
-            3 -> rightPlayerPlayedCardsAdapter
-            else -> return
-        }
-
-        if (cards.isEmpty()) {
-            // 如果不出，显示"不出"
-            adapter.submitList(listOf(Card.createPassCard()))
-        } else {
-            adapter.submitList(cards)
-        }
-    }
-
     private fun playSelectedCards() {
         Log.d(TAG, "playSelectedCards: 处理出牌")
         val currentPlayer = gameStateManager.getCurrentPlayer()
@@ -400,8 +382,9 @@ class GameActivity : AppCompatActivity() {
                 currentPlayer.removeCards(selectedCards)
                 gameStateManager.updateState(currentPlayer, selectedCards)
 
-                // 更新当前玩家的出牌显示
-                updatePlayerPlayedCards(0, selectedCards)
+                // 记录本轮出牌
+                roundPlays.add(currentPlayer to selectedCards)
+                updateCenterCardPoolForRound()
 
                 handAdapter.updateSelectedCards(emptyList())
                 gameStateManager.nextPlayer()
@@ -420,8 +403,9 @@ class GameActivity : AppCompatActivity() {
             if (gamePlayManager.isValidPlay(emptyList(), gameStateManager.getLastPlayedCards(), currentPlayer)) {
                 gameStateManager.updateState(currentPlayer, emptyList())
 
-                // 更新当前玩家的出牌显示为"不出"
-                updatePlayerPlayedCards(0, emptyList())
+                // 记录本轮过牌
+                roundPlays.add(currentPlayer to emptyList())
+                updateCenterCardPoolForRound()
 
                 gameStateManager.nextPlayer()
                 updateUI()
@@ -448,9 +432,9 @@ class GameActivity : AppCompatActivity() {
                     val playedCards = gamePlayManager.handlePlayerPlay(currentPlayer)
                     gameStateManager.updateState(currentPlayer, playedCards)
 
-                    // 更新AI玩家的出牌显示
-                    val playerIndex = game.getPlayers().indexOf(currentPlayer)
-                    updatePlayerPlayedCards(playerIndex, playedCards)
+                    // 记录AI本轮出牌
+                    roundPlays.add(currentPlayer to playedCards)
+                    updateCenterCardPoolForRound()
 
                     gameStateManager.nextPlayer()
                     updateUI()
@@ -467,6 +451,37 @@ class GameActivity : AppCompatActivity() {
                 }
             }, AI_TURN_DELAY)
         }
+    }
+
+    // 新增：统一更新中央牌池
+    private fun updateCenterCardPoolForRound() {
+        // 展示所有玩家本轮的出牌，过牌用不出牌代替
+        // 顺序：本地玩家、左、上、右
+        val players = game.getPlayers()
+        val playerOrder = listOf(0, 1, 2, 3) // 0:本地, 1:左, 2:上, 3:右
+        val cardGroups = mutableListOf<List<Card>>()
+        for (i in playerOrder) {
+            val play = roundPlays.getOrNull(i)?.second ?: emptyList()
+            cardGroups.add(if (play.isEmpty()) listOf(Card.createPassCard()) else play)
+        }
+        // 这里将四组牌合并为一组，实际UI可根据需要分行/分列显示
+        // 目前先简单合并，后续可扩展为多行布局
+        centerCardAdapter.submitList(cardGroups.flatten())
+
+        // 如果所有玩家都出过一次，延迟清空中央牌池
+        if (roundPlays.size == 4) {
+            handler.postDelayed({
+                roundPlays.clear()
+                centerCardAdapter.submitList(emptyList())
+            }, 1200) // 1.2秒后清空
+        }
+    }
+
+    // 新增：每轮结束时清空roundPlays
+    private fun onRoundEnd() {
+        roundPlays.clear()
+        centerCardAdapter.submitList(emptyList())
+        updateUI()
     }
 
     private fun handleGameEnd() {

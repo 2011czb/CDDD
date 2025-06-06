@@ -24,7 +24,7 @@ class CenterCardAdapter : ListAdapter<Card, CenterCardAdapter.CardViewHolder>(Ca
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_center_card, parent, false)
+            .inflate(R.layout.item_card, parent, false)
         return CardViewHolder(view)
     }
 
@@ -43,17 +43,17 @@ class CenterCardAdapter : ListAdapter<Card, CenterCardAdapter.CardViewHolder>(Ca
         fun bind(card: Card) {
             if (card.isPassCard) {
                 // 如果是"不出"牌，显示特殊文本
-                tvCardRankTop.text = "不"
+                tvCardRankTop.text = ""
                 tvCardSuitTop.text = ""
-                tvCardSuitCenter.text = "出"
+                tvCardSuitCenter.text = "不出"
                 tvCardSuitBottom.text = ""
                 tvCardRankBottom.text = ""
                 return
             }
 
             // 设置花色和点数
-            val suitSymbol = card.suit.displayName
-            val rankText = card.rank.displayName
+            val suitSymbol = getSuitSymbol(card.suit)
+            val rankText = getRankText(card.rank)
             val suitColor = getSuitColor(card.suit)
 
             // 设置左上角
@@ -71,6 +71,40 @@ class CenterCardAdapter : ListAdapter<Card, CenterCardAdapter.CardViewHolder>(Ca
             tvCardRankBottom.text = rankText
             tvCardSuitBottom.setTextColor(suitColor)
             tvCardRankBottom.setTextColor(suitColor)
+        }
+
+        private fun getSuitSymbol(suit: Suit): String {
+            return when (suit) {
+                Suit.SPADES -> "♠"
+                Suit.HEARTS -> "♥"
+                Suit.CLUBS -> "♣"
+                Suit.DIAMONDS -> "♦"
+            }
+        }
+
+        private fun getRankText(rank: Rank): String {
+            return when (rank) {
+                Rank.ACE -> "A"
+                Rank.TWO -> "2"
+                Rank.THREE -> "3"
+                Rank.FOUR -> "4"
+                Rank.FIVE -> "5"
+                Rank.SIX -> "6"
+                Rank.SEVEN -> "7"
+                Rank.EIGHT -> "8"
+                Rank.NINE -> "9"
+                Rank.TEN -> "10"
+                Rank.JACK -> "J"
+                Rank.QUEEN -> "Q"
+                Rank.KING -> "K"
+            }
+        }
+
+        private fun getSuitColor(suit: Suit): Int {
+            return when (suit) {
+                Suit.HEARTS, Suit.DIAMONDS -> 0xFFE91E63.toInt() // 红色
+                Suit.SPADES, Suit.CLUBS -> 0xFF212121.toInt() // 黑色
+            }
         }
 
         /**
@@ -139,13 +173,6 @@ class CenterCardAdapter : ListAdapter<Card, CenterCardAdapter.CardViewHolder>(Ca
                 duration = ANIMATION_DURATION
                 interpolator = DecelerateInterpolator()
                 start()
-            }
-        }
-
-        private fun getSuitColor(suit: Suit): Int {
-            return when (suit) {
-                Suit.HEARTS, Suit.DIAMONDS -> 0xFFE91E63.toInt() // 红色
-                Suit.SPADES, Suit.CLUBS -> 0xFF212121.toInt() // 黑色
             }
         }
     }
