@@ -4,6 +4,7 @@ public class Card {
     private final int intValue; // 0-51 的整数表示
     private final Suit suit;
     private final Rank rank;
+    private boolean isPassCard; // 是否是"不出"卡牌
 
     /**
      * 根据0-51的整数值创建一张牌
@@ -17,6 +18,21 @@ public class Card {
         this.intValue = intValue;
         this.suit = Suit.fromValue(intValue / 13);
         this.rank = Rank.fromValue(intValue % 13);
+        this.isPassCard = false;
+    }
+
+    /**
+     * 创建一个"不出"卡牌
+     * @return 表示"不出"的卡牌
+     */
+    public static Card createPassCard() {
+        Card card = new Card(0); // 使用黑桃A作为基础
+        card.isPassCard = true;
+        return card;
+    }
+
+    public boolean isPassCard() {
+        return isPassCard;
     }
 
     public int getIntValue() {
@@ -32,10 +48,13 @@ public class Card {
     }
 
     /**
-     * 获取牌的显示名称，例如 "红桃A", "黑桃K"
+     * 获取牌的显示名称，例如 "红桃A", "黑桃K"，如果是"不出"则返回"不出"
      * @return 牌的字符串表示
      */
     public String getDisplayName() {
+        if (isPassCard) {
+            return "不出";
+        }
         return suit.getDisplayName() + rank.getDisplayName();
     }
 
@@ -49,12 +68,13 @@ public class Card {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Card card = (Card) o;
+        if (isPassCard && card.isPassCard) return true; // 两张"不出"卡牌相等
         return intValue == card.intValue; // 两张牌相等当且仅当它们的整数值相等
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(intValue);
+        return Objects.hash(intValue, isPassCard);
     }
 
     // 示例：获取牌在某些游戏中的点数（例如，J,Q,K为10，A为1或11）
