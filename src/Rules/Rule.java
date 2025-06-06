@@ -1,7 +1,8 @@
 package Rules;
 
 import java.util.List;
-import cards.*;
+
+import cards.Card;
 
 /**
  * 扑克牌规则接口
@@ -37,4 +38,20 @@ public interface Rule {
      * @return 牌型名称
      */
     String getPatternName(List<Card> cards);
+    
+    /**
+     * 判断当前出牌是否有效
+     * @param cards 要出的牌
+     * @param lastCards 上一轮出的牌
+     * @return 是否为有效出牌
+     */
+    boolean isValidPlay(List<Card> cards, List<Card> lastCards);
+    
+    /**
+     * 获取所有可能的有效出牌
+     * @param hand 手牌
+     * @param lastCards 上一轮出的牌
+     * @return 所有可能的有效出牌列表
+     */
+    List<List<Card>> getValidPlays(List<Card> hand, List<Card> lastCards);
 } 

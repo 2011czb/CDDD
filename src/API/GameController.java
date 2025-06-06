@@ -1,14 +1,21 @@
 package API;
 
-import Game.*;
-import Players.Player;
-import Players.HumanPlayer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import Game.Game;
+import Game.GamePlayManager;
+import Game.GameStateManager;
 import Players.AIPlayer;
-import cards.Card;
+import Players.HumanPlayer;
+import Players.Player;
 import PokerPatterns.PlayablePatternUtil;
 import PokerPatterns.generator.CardGroup;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import cards.Card;
 
 /**
  * 游戏控制器类
@@ -144,7 +151,13 @@ public class GameController implements GameAPI{
                 throw new GameException("未找到人类玩家");
             }
 
-            Map<String, List<CardGroup>> patterns = game.getPlayablePatterns(humanPlayer);
+            Map<String, List<CardGroup>> patterns = PlayablePatternUtil.getPlayablePatterns(
+                humanPlayer.getHand(),
+                game.getLastPlayedCards(),
+                game.getGameRule(),
+                stateManager.getLastPlayerIndex(),
+                stateManager.getCurrentPlayerIndex()
+            );
             return new GameResponse<>(true, "获取可出牌型成功", patterns, false, null);
         } catch (Exception e) {
             return new GameResponse<>(false, "获取可出牌型失败: " + e.getMessage(), null, false, null);
@@ -175,6 +188,10 @@ public class GameController implements GameAPI{
             }
         }
         return null;
+    }
+
+    public List<List<Card>> getPlayablePatterns(Player player) {
+        return game.getPlayablePatterns(player, game.getLastPlayedCards());
     }
 }
 

@@ -1,8 +1,10 @@
 package Rules;
 
 import java.util.List;
-import cards.*;
+
+import PokerPatterns.PlayablePatternUtil;
 import PokerPatterns.PokerPatternMatcher;
+import cards.Card;
 
 /**
  * 北方规则实现
@@ -53,5 +55,27 @@ public class NorthRule extends AbstractRule {
         
         // 如果牌型权重相同，再比较关键牌权重
         return Integer.compare(result1.getCriticalCardWeight(), result2.getCriticalCardWeight());
+    }
+    
+    @Override
+    public boolean isValidPlay(List<Card> cards, List<Card> lastCards) {
+        // 如果是第一手牌，只需要检查是否为有效牌型
+        if (lastCards == null || lastCards.isEmpty()) {
+            return isValidPattern(cards);
+        }
+        
+        // 检查是否为有效牌型
+        if (!isValidPattern(cards)) {
+            return false;
+        }
+        
+        // 比较大小
+        return compareCards(cards, lastCards) > 0;
+    }
+    
+    @Override
+    public List<List<Card>> getValidPlays(List<Card> hand, List<Card> lastCards) {
+        // 使用PlayablePatternUtil获取所有可能的有效出牌组合
+        return PlayablePatternUtil.getAllValidPlays(hand, lastCards, this);
     }
 } 

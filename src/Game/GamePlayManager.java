@@ -1,11 +1,17 @@
 package Game;
 
-import Game.playValidator.*;
+import java.util.List;
+
+import Game.playValidator.ComparePlayValidator;
+import Game.playValidator.CompositePlayValidator;
+import Game.playValidator.FirstPlayValidator;
+import Game.playValidator.PassPlayValidator;
+import Game.playValidator.PatternPlayValidator;
+import Game.playValidator.PlayValidator;
+import Game.playValidator.ValidationResult;
 import Players.Player;
 import Rules.Rule;
 import cards.Card;
-
-import java.util.List;
 
 /**
  * 游戏玩法管理器
@@ -83,6 +89,12 @@ public class GamePlayManager {
             return false; // 验证失败
         }
 
+    }
+
+    public void playCards(Player player, List<Card> cards) {
+        player.removeCards(cards);
+        stateManager.setLastPlayedCards(cards);
+        stateManager.setLastPlayerIndex(stateManager.getCurrentPlayerIndex());
     }
 }
 

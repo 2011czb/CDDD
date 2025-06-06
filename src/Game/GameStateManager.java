@@ -1,10 +1,16 @@
 package Game;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import API.GameException;
 import Players.Player;
+import PokerPatterns.PlayablePatternUtil;
+import PokerPatterns.generator.CardGroup;
+import Rules.Rule;
 import cards.Card;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 
 /**
@@ -35,10 +41,12 @@ public class GameStateManager {
     private Player winner;
     private final List<Player> players;
     private final List<GameStateListener> listeners;
+    private final Rule gameRule;
 
-    public GameStateManager(List<Player> players) {
+    public GameStateManager(List<Player> players, Rule gameRule) {
         this.players = players;
         this.listeners = new CopyOnWriteArrayList<>();
+        this.gameRule = gameRule;
         reset();
     }
 
@@ -167,6 +175,14 @@ public class GameStateManager {
         }
     }
 
+    public void setLastPlayedCards(List<Card> cards) {
+        this.lastPlayedCards = cards;
+    }
+
+    public void setLastPlayerIndex(int index) {
+        this.lastPlayerIndex = index;
+    }
+
     // 事件监听相关方法
     public void addListener(GameStateListener listener) {
         listeners.add(listener);
@@ -180,6 +196,22 @@ public class GameStateManager {
         for (GameStateListener listener : listeners) {
             listener.onGameStateChanged(eventType, this);
         }
+    }
+
+    public List<List<Card>> getPlayablePatterns(Player player, List<Card> lastPlayedCards) {
+        List<Card> hand = player.getHand();
+        int lastPlayerIndex = getLastPlayerIndex();
+        int currentPlayerIndex = getCurrentPlayerIndex();
+        
+        Map<String, List<CardGroup>> patterns = PlayablePatternUtil.getPlayablePatterns(
+            hand, lastPlayedCards, this.gameRule, lastPlayerIndex, currentPlayerIndex
+        );
+        
+        List<List<Card>> result = new ArrayList<>();
+        patterns.values().forEach(cardGroups -> 
+            cardGroups.forEach(group -> result.add(group.getCards()))
+        );
+        return result;
     }
 }
 

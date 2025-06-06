@@ -1,19 +1,21 @@
 package Game;
 
-import Players.*;
-import AI.*;
-import PokerPatterns.PlayablePatternUtil;
-import PokerPatterns.generator.CardGroup;
-import cards.Card;
-import cards.Deck;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import Rules.Rule;
+import AI.AIStrategy;
+import AI.AIStrategyType;
+import AI.DynamicAIStrategy;
+import AI.SmartAIStrategy;
+import Players.AIPlayer;
+import Players.HumanPlayer;
+import Players.Player;
 import Rules.NorthRule;
+import Rules.Rule;
 import Rules.SouthRule;
+import cards.Card;
+import cards.Deck;
 
 /**
  * game：游戏初始化，主循环，管理基本游戏状态
@@ -47,7 +49,7 @@ public class Game {
         this.gameRule = builder.gameRule;
         this.deck = new Deck();
 
-        this.stateManager = new GameStateManager(players);
+        this.stateManager = new GameStateManager(players, this.gameRule);
         this.playManager = new GamePlayManager(gameRule, stateManager);
         this.scoreManager = new GameScoreManager(players);
     }
@@ -112,15 +114,8 @@ public class Game {
     }
 
     //获取可出牌提示
-    public Map<String, List<CardGroup>> getPlayablePatterns(Player player) {
-        List<Card> hand = player.getHand();
-        List<Card> lastCards = stateManager.getLastPlayedCards();
-        int lastPlayerIndex = stateManager.getLastPlayerIndex();
-        int currentPlayerIndex = stateManager.getCurrentPlayerIndex();
-
-        return PlayablePatternUtil.getPlayablePatterns(
-                hand, lastCards, gameRule, lastPlayerIndex, currentPlayerIndex
-        );
+    public List<List<Card>> getPlayablePatterns(Player player, List<Card> lastPlayedCards) {
+        return stateManager.getPlayablePatterns(player, lastPlayedCards);
     }
 
     /**
@@ -283,6 +278,14 @@ public class Game {
 
     public String getRuleName() {
         return gameRule instanceof NorthRule ? "北方规则" : "南方规则";
+    }
+
+    public boolean isGameOver() {
+        return stateManager.getCurrentState() == GameStateManager.GameState.GAME_END;
+    }
+
+    public List<Card> getLastPlayedCards() {
+        return stateManager.getLastPlayedCards();
     }
 
 }

@@ -5,6 +5,13 @@ public class Card {
     private final Suit suit;
     private final Rank rank;
 
+    // 添加空构造函数以支持 KryoNet 序列化
+    public Card() {
+        this.intValue = 0;
+        this.suit = Suit.SPADES;
+        this.rank = Rank.ACE;
+    }
+
     /**
      * 根据0-51的整数值创建一张牌
      * @param intValue 0-51之间的整数

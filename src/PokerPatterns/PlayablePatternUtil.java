@@ -1,11 +1,26 @@
 package PokerPatterns;
 
-import PokerPatterns.basis.*;
-import PokerPatterns.generator.CardGroup;
-import Rules.Rule;
-import cards.Card;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
+
+import PokerPatterns.basis.Flush;
+import PokerPatterns.basis.FourofaKind;
+import PokerPatterns.basis.FullHouse;
+import PokerPatterns.basis.One;
+import PokerPatterns.basis.Pair;
+import PokerPatterns.basis.PokerPattern;
+import PokerPatterns.basis.Straight;
+import PokerPatterns.basis.StraightFlush;
+import PokerPatterns.basis.Three;
+import PokerPatterns.generator.CardGroup;
+import Rules.NorthRule;
+import Rules.Rule;
+import Rules.SouthRule;
+import cards.Card;
 
 /**
  * 可出牌型工具类
@@ -61,19 +76,50 @@ public class PlayablePatternUtil {
         }
 
         // 根据规则判断哪些牌型可以出
-        for (PokerPattern pattern : PATTERNS) {
-            List<CardGroup> groups = pattern.potentialCardGroup(hand);
-            List<CardGroup> playableGroups = groups.stream()
-                    .filter(group -> rule.canCompare(group.getCards(), lastCards) &&
-                            rule.compareCards(group.getCards(), lastCards) > 0)
-                    .collect(Collectors.toList());
+        if (rule instanceof NorthRule) {
+            // 北方规则：任何牌型都可以比较
+            for (PokerPattern pattern : PATTERNS) {
+                List<CardGroup> groups = pattern.potentialCardGroup(hand);
+                List<CardGroup> playableGroups = groups.stream()
+                        .filter(group -> rule.canCompare(group.getCards(), lastCards) &&
+                                rule.compareCards(group.getCards(), lastCards) > 0)
+                        .collect(Collectors.toList());
 
-            if (!playableGroups.isEmpty()) {
-                playablePatterns.put(pattern.getName(), playableGroups);
+                if (!playableGroups.isEmpty()) {
+                    playablePatterns.put(pattern.getName(), playableGroups);
+                }
+            }
+        } else if (rule instanceof SouthRule) {
+            // 南方规则：只能出相同牌型
+            PokerPattern lastPattern = getPattern(lastCards);
+            if (lastPattern != null) {
+                List<CardGroup> groups = lastPattern.potentialCardGroup(hand);
+                List<CardGroup> playableGroups = groups.stream()
+                        .filter(group -> rule.canCompare(group.getCards(), lastCards) &&
+                                rule.compareCards(group.getCards(), lastCards) > 0)
+                        .collect(Collectors.toList());
+
+                if (!playableGroups.isEmpty()) {
+                    playablePatterns.put(lastPattern.getName(), playableGroups);
+                }
             }
         }
 
         return playablePatterns;
+    }
+
+    /**
+     * 获取牌组对应的牌型
+     * @param cards 牌组
+     * @return 牌型，如果不是有效牌型则返回null
+     */
+    private static PokerPattern getPattern(List<Card> cards) {
+        for (PokerPattern pattern : PATTERNS) {
+            if (pattern.match(cards)) {
+                return pattern;
+            }
+        }
+        return null;
     }
 
     /**
@@ -122,5 +168,29 @@ public class PlayablePatternUtil {
                 System.out.println();
             }
         }
+    }
+
+    /**
+     * 获取所有可能的有效出牌组合
+     * @param hand 手牌
+     * @param lastCards 上一手牌
+     * @param rule 当前规则
+     * @return 所有可能的有效出牌组合
+     */
+    public static List<List<Card>> getAllValidPlays(List<Card> hand, List<Card> lastCards, Rule rule) {
+        List<List<Card>> validPlays = new ArrayList<>();
+        Map<String, List<CardGroup>> playablePatterns = getPlayablePatterns(hand, lastCards, rule, -1, 0);
+        
+        for (List<CardGroup> groups : playablePatterns.values()) {
+            for (CardGroup group : groups) {
+                validPlays.add(group.getCards());
+            }
+        }
+        
+        return validPlays;
+    }
+
+    public static boolean isValidPattern(List<Card> cards, PokerPattern pattern) {
+        return pattern.match(cards);
     }
 } 
